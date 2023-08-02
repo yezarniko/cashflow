@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Sidebar.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Sidebar.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// @ts-check
+// React imports
+import React, { useContext, useEffect, useState } from "react";
+
+// Asset imports
+import HomeLogo from "@assets/Home.png"; // Importing the home logo image
+import Logo from "@assets/Logo.png"; // Importing the logo image
+import LogsLogo from "@assets/Logs.png"; // Importing the logs logo image
+import ProductsLogo from "@assets/Products.png"; // Importing the products logo image
+import SaleLogo from "@assets/Sale.png"; // Importing the sale logo image
+import SettingsLogo from "@assets/Settings.png"; // Importing the settings logo image
+import StatisticsLogo from "@assets/Statistics.png"; // Importing the statistics logo image
+import ProfileImg from "@assets/profile.jpg"; // Importing the profile image
+
+/**
+ * The `Sidebar` function is a React component that renders the sidebar.
+ * The sidebar consists of a logo, a menu, and an account profile section.
+ *
+ * @function
+ * @name Sidebar
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function Sidebar() {
+  return (
+    &lt;div className="sidebar">
+      &lt;div className="sidebar__logo">
+        &lt;img src={Logo} />
+      &lt;/div>
+      &lt;Menu />
+      &lt;div className="sidebar__account_profile">
+        &lt;img
+          src={ProfileImg}
+          alt=""
+          className="sidebar__account_profile__img"
+        />
+        &lt;p className="sidebar__account_profile__name">Admin&lt;/p>
+        &lt;div className="sidebar__settings">
+          &lt;img src={SettingsLogo} alt="" className="sidebar__settings__logo" />
+          &lt;div className="sidebar__settings__text">Settings&lt;/div>
+        &lt;/div>
+      &lt;/div>
+    &lt;/div>
+  );
+}
+
+/**
+ * This context object can be used to share data between components without passing props manually through every level of the component tree.
+ * The `createContext()` function returns an object with two properties: `Provider` and `Consumer`.
+ * The `Provider` component is used to provide the context value to its descendants, and the `Consumer` component is used to access the context value within a component.
+ *
+ * @constant
+ * @name CurrentPageContext
+ * @kind variable
+ * @type {React.Context&lt;any>}
+ */
+const CurrentPageContext = React.createContext(null);
+
+/**
+ * The `Menu` function is a React component that renders the menu section of the sidebar.
+ * It returns a JSX element that represents the menu.
+ * The menu consists of a list of menu items, each containing a logo and text.
+ * The current page is tracked using the `currentPage` state variable and updated using the `setCurrentPage` function from the `CurrentPageContext` context.
+ *
+ * @function
+ * @name Menu
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function Menu() {
+
+  const [currentPage, setCurrentPage] = useState("Home");
+
+  useEffect(() => {
+    console.log("Render Menu!");
+  });
+
+  return (
+    /**
+     * It creates a context provider with the value of `currentPage` and `setCurrentPage` as an object.
+     * This allows any component that consumes the `CurrentPageContext` to access and update the `currentPage` state variable and `setCurrentPage` function.
+     *
+     * @constant
+     * @name CurrentPageContext
+     * @type {React.Context&lt;any>}
+     */
+    &lt;CurrentPageContext.Provider value={{ currentPage, setCurrentPage }}>
+      &lt;ul className="sidebar__menu">
+        &lt;MenuItem Logo={HomeLogo} text="Home" />
+        &lt;MenuItem Logo={SaleLogo} text="Sale" />
+        &lt;MenuItem Logo={ProductsLogo} text="Products" />
+        &lt;MenuItem Logo={LogsLogo} text="Logs" />
+        &lt;MenuItem Logo={StatisticsLogo} text="Statistics" />
+      &lt;/ul>
+    &lt;/CurrentPageContext.Provider>
+  );
+}
+
+/**
+ * The `function MenuItem({ Logo, text })` is a component that takes in two props, `Logo` and `text`.
+ * These props are destructured from the component's parameter object.
+ * The component renders a menu item in the sidebar with an image logo and text.
+ * The `Logo` prop represents the logo image for the menu item, and the `text` prop represents the text for the menu item.
+ *
+ * @function
+ * @name MenuItem
+ * @kind function
+ * @param {Object} props - The component props.
+ * @param {string} props.Logo - The URL of the logo image for the menu item.
+ * @param {string} props.text - The text for the menu item.
+ *
+ * @returns {React.JSX.Element}
+ */
+function MenuItem({ Logo, text }) {
+  const { currentPage, setCurrentPage } = useContext(CurrentPageContext);
+
+  return (
+    &lt;li
+      className={
+        "sidebar__menu__item " +
+        (currentPage == text ? "sidebar__menu__item-selected" : "")
+      }
+      onClick={() => setCurrentPage(text)}
+    >
+      &lt;img src={Logo} alt="" className="sidebar__menu__item__logo" />
+      &lt;div className="sidebar__menu__item__text">{text}&lt;/div>
+    &lt;/li>
+  );
+}
+
+export default Sidebar;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CurrentPageContext">CurrentPageContext</a></li><li><a href="global.html#DateAndTime">DateAndTime</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#MenuItem">MenuItem</a></li><li><a href="global.html#OrderList">OrderList</a></li><li><a href="global.html#OrderListContent">OrderListContent</a></li><li><a href="global.html#RecentSaleDash">RecentSaleDash</a></li><li><a href="global.html#RecentSaleTable">RecentSaleTable</a></li><li><a href="global.html#RecentSaleTableContent">RecentSaleTableContent</a></li><li><a href="global.html#Sidebar">Sidebar</a></li><li><a href="global.html#Upsale">Upsale</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Aug 02 2023 02:26:10 GMT+0630 (Myanmar Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: pages/pos/Home.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: pages/pos/Home.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// @ts-check
+// React imports
+import React, { useEffect, useRef, useState } from "react";
+
+// Asset imports
+import FlagImg from "@assets/Flag_of_Myanmar.svg"; // Importing the flag image of Myanmar
+import PlusIcon from "@assets/add.png"; // Importing the 'add' icon image
+import BestSellerImage from "@assets/bestseller.png"; // Importing the bestseller image
+import ProductImg from "@assets/herballines-shampoo.png"; // Importing the product image for 'Herballines Shampoo'
+
+/**
+ * The `Home` function is a React component that represents the home page.
+ * It returns a JSX element that contains the necessary HTML structure and components for rendering the home page.
+ * The `Home` component includes three child components: `RecentSaleDash`, `Upsale`, and `OrderList`.
+ *
+ * @function
+ * @name Home
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function Home() {
+  return (
+    &lt;div className="home">
+      &lt;RecentSaleDash />
+      &lt;Upsale />
+      &lt;OrderList />
+    &lt;/div>
+  );
+}
+
+/**
+ * The `RecentSaleDash` function is a React component that represents the recent sale dashboard section of the home page.
+ *
+ * @function
+ * @name RecentSaleDash
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function RecentSaleDash() {
+  useEffect(() => {
+    console.log("render Recent Sale!");
+  });
+
+  return (
+    &lt;div className="home__recent_sale">
+      &lt;div className="home__recent_sale__header">
+        &lt;div className="home__recent_sale__header__total_sale">
+          Today Sale : &lt;span>2000000&lt;/span>
+          &lt;span>
+            ks
+            &lt;img src={FlagImg} />
+          &lt;/span>
+        &lt;/div>
+        &lt;DateAndTime />
+      &lt;/div>
+      &lt;RecentSaleTable />
+    &lt;/div>
+  );
+}
+
+/**
+ * The `RecentSaleTable` function is a React component that represents the table of recent sales.
+ * It renders a table with headers for "Products", "Counts", and "Amounts", and a list of `RecentSaleTableContent` components that display the product image, name, count, and amount for each recent sale.
+ * The function also includes a `useRef` hook to get a reference to the table element and a `useEffect` hook to set the position of the table based on the window height.
+ *
+ * @function
+ * @name RecentSaleTable
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function RecentSaleTable() {
+  // Create a reference to the table element using the useRef hook
+  const tableRef = useRef(null);
+
+  // useEffect hook to set the position of the table based on the window height
+  useEffect(() => {
+    // Get the current table element using the ref
+    const table = tableRef.current;
+
+    // Get the current position of the table
+    const currentPosition = table.offsetTop;
+
+    // Get the window height to calculate the bottom offset
+    const windowHeight = window.innerHeight;
+    const bottomOffset = windowHeight * 0.05; // 5% of window height
+
+    // Set the table position using inline styles
+    table.style.top = `${currentPosition}px`;
+    table.style.bottom = `${bottomOffset}px`;
+  }, []);
+
+  return (
+    &lt;>
+      &lt;h3>Recent Sales&lt;/h3>
+      &lt;div ref={tableRef} className="home__recent_sale__table">
+        &lt;div className="home__recent_sale__table__header">
+          &lt;div>Products&lt;/div>
+          &lt;div>Counts&lt;/div>
+          &lt;div>Amounts&lt;/div>
+        &lt;/div>
+        &lt;div className="home__recent_sale__table__contents">
+          &lt;RecentSaleTableContent />
+          &lt;RecentSaleTableContent />
+          &lt;RecentSaleTableContent />
+          &lt;RecentSaleTableContent />
+          &lt;RecentSaleTableContent />
+          &lt;RecentSaleTableContent />
+          &lt;RecentSaleTableContent />
+          &lt;RecentSaleTableContent />
+        &lt;/div>
+      &lt;/div>
+    &lt;/>
+  );
+}
+
+/**
+ * The `RecentSaleTableContent` function is a React component that represents a single row of the recent sale table.
+ * It displays the product image, name, count, and amount.
+ * It returns a JSX element that contains the necessary HTML structure and data for rendering the table row.
+ *
+ * @function
+ * @name RecentSaleTableContent
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function RecentSaleTableContent() {
+  return (
+    &lt;div className="home__recent_sale__table__content">
+      &lt;div>
+        &lt;img src={ProductImg} alt="" />
+      &lt;/div>
+      &lt;div>Herbaline Shampoo&lt;/div>
+      &lt;div>1&lt;/div>
+      &lt;div>12000&lt;/div>
+    &lt;/div>
+  );
+}
+
+/**
+ * The `DateAndTime` function is a React component that displays the current date and time.
+ * It uses the `useState` hook to store the current date and time as a state variable.
+ * It also uses the `useEffect` hook to update the date and time every 10 seconds.
+ * The component renders the formatted time and date in a div element.
+ *
+ * @function
+ * @name DateAndTime
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function DateAndTime() {
+  // Get the current date and time
+  const [currentDateAndTime, setCurrentDateAndTime] = useState(new Date());
+
+  // Extract the hours, minutes, and AM/PM period from the current date and time
+  const hours = currentDateAndTime.getHours();
+  const minutes = currentDateAndTime.getMinutes();
+  const period = hours >= 12 ? "PM" : "AM";
+
+  // Format the time as "hh:mm AM/PM"
+  const formattedTime = `${hours % 12 || 12}:${minutes
+    .toString()
+    .padStart(2, "0")} ${period}`;
+
+  // Extract the year, month, and day from the current date and time
+  const year = currentDateAndTime.getFullYear().toString().slice(-2);
+  const month = (currentDateAndTime.getMonth() + 1).toString().padStart(2, "0");
+  const day = currentDateAndTime.getDate().toString().padStart(2, "0");
+
+  // Define an array of days of the week and get the current day of the week
+  const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const dayOfWeek = daysOfWeek[currentDateAndTime.getDay()];
+
+  // useEffect hook to update the date and time every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDateAndTime(new Date());
+    }, 10000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  return (
+    &lt;div className="home__recent_sale__header__clock">
+      &lt;div className="home__recent_sale__header__clock__time">
+        {formattedTime}
+      &lt;/div>
+      &lt;div className="home__recent_sale__header__clock__date">
+        {day}/{month}/{year} &lt;span>{dayOfWeek}&lt;/span>
+      &lt;/div>
+    &lt;/div>
+  );
+}
+
+/**
+ * The `Upsale` function is a React component that represents the section of the home page displaying today's upsell products.
+ * It returns a JSX element that contains the necessary HTML structure and data for rendering the upsell section.
+ * It includes a heading, a table displaying the upsell products, and their sale counts.
+ *
+ * @function
+ * @name Upsale
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function Upsale() {
+  return (
+    &lt;div className="home__upsale">
+      &lt;h3 className="home__upsale__heading">Today's Upsale&lt;/h3>
+      &lt;div className="home__upsale__table">
+        &lt;div className="home__upsale__table__content">
+          &lt;div>
+            &lt;img src={BestSellerImage} alt="" />
+          &lt;/div>
+          &lt;div className="home__upsale__table__content__product_name">Eggs&lt;/div>
+          &lt;div className="home__upsale__table__content__sale_counts">50&lt;/div>
+        &lt;/div>
+        &lt;div className="home__upsale__table__content">
+          &lt;div>2&lt;/div>
+          &lt;div className="home__upsale__table__content__product_name">
+            Coca-cola
+          &lt;/div>
+          &lt;div className="home__upsale__table__content__sale_counts">30&lt;/div>
+        &lt;/div>
+        &lt;div className="home__upsale__table__content">
+          &lt;div>3&lt;/div>
+          &lt;div className="home__upsale__table__content__product_name">
+            Ubrand Book
+          &lt;/div>
+          &lt;div className="home__upsale__table__content__sale_counts">25&lt;/div>
+        &lt;/div>
+        &lt;div className="home__upsale__table__content">
+          &lt;div>4&lt;/div>
+          &lt;div className="home__upsale__table__content__product_name">
+            Ovaltine
+          &lt;/div>
+          &lt;div className="home__upsale__table__content__sale_counts">24&lt;/div>
+        &lt;/div>
+        &lt;div className="home__upsale__table__content">
+          &lt;div>5&lt;/div>
+          &lt;div className="home__upsale__table__content__product_name">
+            Mama noodle
+          &lt;/div>
+          &lt;div className="home__upsale__table__content__sale_counts">20&lt;/div>
+        &lt;/div>
+      &lt;/div>
+    &lt;/div>
+  );
+}
+
+/**
+ * The `OrderList` function is a React component that represents the section of the home page displaying the order list.
+ * It returns a JSX element that contains the necessary HTML structure and data for rendering the order list section.
+ * It includes a heading, a list of order items, and an "Add Order" button.
+ *
+ * @function
+ * @name OrderList
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function OrderList() {
+  return (
+    &lt;>
+      &lt;div className="home__order_list">
+        &lt;h3 className="home__order_list__heading">Order List&lt;/h3>
+        &lt;div className="home__order_list__contents">
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+          &lt;OrderListContent />
+        &lt;/div>
+        &lt;div className="home__order_list__add_order-btn">
+          &lt;img src={PlusIcon} alt="" />
+          Add Order
+        &lt;/div>
+      &lt;/div>
+    &lt;/>
+  );
+}
+
+function OrderListInput() {
+  return (
+    &lt;div className="home__order_list__input_box">
+      &lt;h3 className="home__order_list__heading">Add Order&lt;/h3>
+      &lt;div className="home__order_list__form">
+        &lt;input type="text" className="home__order_list__form__product_name" />
+        &lt;input type="text" className="home__order_list__form__product_price" />
+        &lt;input type="text" className="home__order_list__form__service_phone" />
+        &lt;input type="text" className="home__order_list__form__customer_phone" />
+        &lt;input type="textarea" className="home__order_list__form__note" />
+      &lt;/div>
+    &lt;/div>
+  );
+}
+
+/**
+ * The `OrderListContent` function is a React component that represents a single item in the order list.
+ * It renders a div element with the item's number, name, price, checkbox and payment.
+ * It also includes a state variable `isChecked` and a function `handleCheckboxChange` to handle the checkbox's checked state.
+ *
+ * @function
+ * @name OrderListContent
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
+function OrderListContent() {
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
+  };
+  return (
+    &lt;div
+      className={
+        "home__order_list__content " +
+        (isChecked ? "home__order_list__content-checked" : "")
+      }
+    >
+      &lt;div>1&lt;/div>
+      &lt;div>LG TV&lt;/div>
+      &lt;div>200k&lt;/div>
+      &lt;input
+        type="checkbox"
+        checked={isChecked}
+        onChange={handleCheckboxChange}
+      />
+      &lt;div>cash&lt;/div>
+    &lt;/div>
+  );
+}
+
+export default Home;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CurrentPageContext">CurrentPageContext</a></li><li><a href="global.html#DateAndTime">DateAndTime</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#MenuItem">MenuItem</a></li><li><a href="global.html#OrderList">OrderList</a></li><li><a href="global.html#OrderListContent">OrderListContent</a></li><li><a href="global.html#RecentSaleDash">RecentSaleDash</a></li><li><a href="global.html#RecentSaleTable">RecentSaleTable</a></li><li><a href="global.html#RecentSaleTableContent">RecentSaleTableContent</a></li><li><a href="global.html#Sidebar">Sidebar</a></li><li><a href="global.html#Upsale">Upsale</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Aug 02 2023 02:26:10 GMT+0630 (Myanmar Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
