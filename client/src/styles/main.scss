@@ -1,0 +1,72 @@
+@import url("https://fonts.googleapis.com/css2?family=Courgette&family=Poppins:wght@400;500;600;700;800;900&display=swap");
+
+:root {
+  --primary-color: rgba(21, 122, 254, 1);
+  --secondary-color: rgba(130, 112, 112, 1);
+  --gradient-color: linear-gradient(
+    270deg,
+    rgba(182, 65, 181, 0.11) 0%,
+    rgba(21, 122, 254, 0.14) 100%
+  );
+  font-size: 13px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins";
+  e a {
+    text-decoration: none;
+  }
+  ul {
+    list-style: none;
+  }
+}
+
+// Mixins
+@import "./mixins";
+
+img {
+  width: 100%;
+  object-fit: cover;
+}
+
+.container {
+  width: 100%;
+  height: 100vh;
+
+  max-width: 1577px;
+  min-width: 1260px;
+  min-height: 600px;
+
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dashboard {
+    width: 82%;
+    margin: 0 auto;
+    min-height: 100%;
+    overflow: scroll;
+
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+  }
+}
+
+// Components
+@import "./sidebar";
+
+// Pages
+@import "./pages/_home";

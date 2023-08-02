@@ -1,0 +1,125 @@
+/**
+ * Mixin to prevent text selection on an element.
+ *
+ * @mixin
+ * @name prevent_selected
+ */
+@mixin prevent_selected() {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+
+/**
+ * Mixin to center the content both horizontally and vertically.
+ *
+ * @mixin
+ * @name center_this
+ * @example
+ *   @include center_this(); // Centers the content horizontally and vertically.
+ */
+@mixin center_this() {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/**
+ * Mixin to style headings.
+ *
+ * @mixin
+ * @name heading
+ * @example
+ *   @include heading(); // Applies the default styles for headings.
+ */
+@mixin heading() {
+  text-align: center;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: inline-block;
+  padding: 1.4em 0;
+  &:hover {
+    color: #ff6712;
+  }
+}
+
+
+/**
+ * Mixin to style the selected menu item.
+ *
+ * @mixin
+ * @name menu__selected
+ * @param {string} $color - The background color for the selected menu item. Default is var(--gradient-color).
+ * @example
+ *   @include menu__selected(#ff6712); // Applies the selected menu styles with the provided color (#ff6712).
+ */
+@mixin menu__selected($color: var(--gradient-color)) {
+  border-radius: 0.625rem;
+  backdrop-filter: blur(10px);
+  background: $color;
+}
+
+
+@mixin menu__item() {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5em;
+  // cursor: pointer;
+  &__logo {
+    width: 26px;
+    margin-right: 1.13em;
+  }
+  &__text {
+    color: var(--secondary-color);
+    font-size: 1rem;
+    font-weight: 500;
+    @include prevent_selected; // Applies the mixin to prevent text selection.
+  }
+}
+
+
+
+@mixin table_content($height) {
+  display: flex;
+  height: $height;
+
+  div {
+    color: var(--secondary-color);
+    &:hover {
+      color: var(--primary-color);
+    }
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.055rem;
+    padding: 1em 0;
+    text-align: center;
+
+    &:not(:first-child) {
+      border-left: 2px solid rgba(130, 112, 112, 0.1);
+    }
+    &:nth-last-child(1) {
+      width: 15%;
+    }
+    &:nth-last-child(2) {
+      width: 11%;
+    }
+  }
+}
+
+
+@mixin recent_sale_table_content() {
+  @include table_content(16.7%);
+
+  div {
+    &:nth-last-child(1) {
+      width: 15%;
+    }
+    &:nth-last-child(2) {
+      width: 11%;
+    }
+  }
+}
