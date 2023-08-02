@@ -1,35 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// @ts-check
+// React imports
+import React, { useEffect } from "react"; // React Imports
 
+// Component imports
+import Sidebar from "@comp/Sidebar"; // Importing the Sidebar component
+
+// Page imports
+import Home from "@pages/pos/Home"; // Importing the Home page component from the POS directory
+
+/**
+ * The `function App()` is defining a functional component named `App`.
+ * This component is responsible for rendering the main structure of the application.
+ * It includes a `Sidebar` component and a `div` with the class name "dashboard" that contains the `Home` component.
+ *
+ * @function
+ * @name App
+ * @kind function
+ * @returns {React.JSX.Element}
+ */
 function App() {
-  const [count, setCount] = useState(0)
-
+  useEffect(() => {
+    console.log("Render App!");
+  });
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="container">
+      <Sidebar />
+      <div className="dashboard">
+        <Home />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
