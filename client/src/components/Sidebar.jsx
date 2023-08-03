@@ -3,14 +3,14 @@
 import React, { useContext, useEffect, useState } from "react";
 
 // Asset imports
-import HomeLogo from "@assets/Home.png"; // Importing the home logo image
-import Logo from "@assets/Logo.png"; // Importing the logo image
-import LogsLogo from "@assets/Logs.png"; // Importing the logs logo image
-import ProductsLogo from "@assets/Products.png"; // Importing the products logo image
-import SaleLogo from "@assets/Sale.png"; // Importing the sale logo image
-import SettingsLogo from "@assets/Settings.png"; // Importing the settings logo image
-import StatisticsLogo from "@assets/Statistics.png"; // Importing the statistics logo image
-import ProfileImg from "@assets/profile.jpg"; // Importing the profile image
+import HomeLogo from "@assets/Home.png";
+import Logo from "@assets/Logo.png";
+import LogsLogo from "@assets/Logs.png";
+import ProductsLogo from "@assets/Products.png";
+import SaleLogo from "@assets/Sale.png";
+import SettingsLogo from "@assets/Settings.png";
+import StatisticsLogo from "@assets/Statistics.png";
+import ProfileImg from "@assets/profile.jpg";
 
 /**
  * The `Sidebar` function is a React component that renders the sidebar.
