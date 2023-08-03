@@ -1,12 +1,22 @@
 // @ts-check
-// React imports
+// React
 import React, { useEffect, useRef, useState } from "react";
 
+// Ant Design is a comprehensive and popular UI library
+// It offers a wide range of reusable and customizable React components
+import { Form, Input, InputNumber, Modal, Button, message } from "antd";
+const { TextArea } = Input;
+
+// Yup is a powerful validation library used for form validation,
+// data schema validation, and more, providing a concise and declarative way to define validation rules.
+import * as Yup from "yup";
+
 // Asset imports
-import FlagImg from "@assets/Flag_of_Myanmar.svg"; // Importing the flag image of Myanmar
-import PlusIcon from "@assets/add.png"; // Importing the 'add' icon image
-import BestSellerImage from "@assets/bestseller.png"; // Importing the bestseller image
-import ProductImg from "@assets/herballines-shampoo.png"; // Importing the product image for 'Herballines Shampoo'
+import FlagImg from "@assets/Flag_of_Myanmar.svg";
+import PlusIcon from "@assets/add.png";
+import BestSellerImage from "@assets/bestseller.png";
+import ProductImg from "@assets/herballines-shampoo.png";
+import NotificationSound from "@assets/notification.mp3";
 
 /**
  * The `Home` function is a React component that represents the home page.
@@ -274,27 +284,233 @@ function OrderList() {
           <OrderListContent />
           <OrderListContent />
         </div>
-        <div className="home__order_list__add_order-btn">
-          <img src={PlusIcon} alt="" />
-          Add Order
-        </div>
+        <AddOrderButton />
       </div>
     </>
   );
 }
 
-function OrderListInput() {
+/**
+ * `AddOrderButton` represents a button component to add new orders with a modal window for input.
+ *  allows users to open a modal window to input new order details.
+ *
+ * @function
+ * @name AddOrderButton
+ * @returns {React.JSX.Element}
+ */
+function AddOrderButton() {
+  const [isModalOpen, setIsModalOpen] = useState(true);
   return (
-    <div className="home__order_list__input_box">
-      <h3 className="home__order_list__heading">Add Order</h3>
-      <div className="home__order_list__form">
-        <input type="text" className="home__order_list__form__product_name" />
-        <input type="text" className="home__order_list__form__product_price" />
-        <input type="text" className="home__order_list__form__service_phone" />
-        <input type="text" className="home__order_list__form__customer_phone" />
-        <input type="textarea" className="home__order_list__form__note" />
+    <>
+      <div
+        className="home__order_list__add_order-btn"
+        onClick={() => setIsModalOpen(true)}
+      >
+        <img src={PlusIcon} alt="" />
+        Add Order
       </div>
-    </div>
+      <OrderListInput {...{ isModalOpen, setIsModalOpen }} />
+    </>
+  );
+}
+
+/**
+ * Renders a form component to add orders to the order list.
+ *
+ * @typedef {Object} FormValues
+ * @property {string} product_name
+ * @property {number} product_price
+ * @property {number} service_phone
+ * @property {number} customer_phone
+ * @property {string} note
+ *
+ *
+ * @function
+ * @name OrderListInput
+ * @param {Object} props - The props object
+ * @param {boolean} props.isModalOpen - Indicates whether the modal is open or not.
+ * @param {function} props.setIsModalOpen - A function to set the state of isModalOpen.
+ *
+ * @returns {JSX.Element} A JSX element representing the OrderListInput component.
+ */
+function OrderListInput({ isModalOpen, setIsModalOpen }) {
+  // initialize the form instance.
+  const [form] = Form.useForm();
+
+  // message API object, which is used to notify message.
+  const [messageApi, contextHolder] = message.useMessage();
+
+  // specifies the validation rules for the fields in a form.
+  const validationSchema = Yup.object().shape({
+    phoneNumber: Yup.string()
+      .required("Phone number is required")
+      .min(9, "Phone number must be at least 10 digits")
+      .max(15, "Phone number cannot exceed 15 digits")
+      .matches(/^\+?[0-9]+$/, "Invalid phone number"),
+  });
+
+  /**
+   * phoneNumberValidator is an asynchronous function that performs custom validation
+   * for the `service phone` and `customer phone` fields.
+   *
+   * @async
+   * @function
+   * @memberof OrderListInput
+   * @param {any} _
+   * @param {FormValues} value
+   * @returns {Promise<void>}
+   */
+  async function phoneNumberValidator(_, value) {
+    {
+      try {
+        await validationSchema.validate({ phoneNumber: value });
+      } catch (err) {
+        throw new Error(err.message);
+      }
+    }
+  }
+
+  /**
+   * Handle Model close
+   *
+   * @function
+   * @memberof OrderListInput
+   * @returns {void}
+   */
+  function handleOnCancel() {
+    form.resetFields();
+    setIsModalOpen(false);
+  }
+
+  /**
+   * Notification Sound Handler
+   *
+   * @function
+   * @memberof OrderListInput
+   * @returns {void}
+   */
+  function playNotificationSound() {
+    const audio = new Audio(NotificationSound);
+    audio.play();
+  }
+
+  /**
+   * Handle Form Submit
+   *
+   * @function
+   * @memberof OrderListInput
+   * @param {FormValues} values
+   * @returns {void}
+   */
+  function handleOnSubmit(values) {
+    form.resetFields(); // reset form
+    setIsModalOpen(false); // close model
+    playNotificationSound(); // play notification sound
+
+    // added order notification message
+    messageApi.open({
+      type: "success",
+      content: `${values.product_name} was added to order lsit`,
+      duration: 3,
+    });
+  }
+
+  return (
+    <>
+      {contextHolder}
+      <Modal
+        width="25%"
+        open={isModalOpen}
+        onOk={() => setIsModalOpen(false)}
+        onCancel={handleOnCancel}
+        className="modal"
+        footer={null}
+      >
+        <h2>Add Order</h2>
+        <Form
+          className="home__order_list__input_form"
+          initialValues={{
+            remember: true,
+          }}
+          form={form}
+          onFinish={handleOnSubmit}
+        >
+          <Form.Item
+            name="product_name"
+            rules={[
+              {
+                required: true,
+                message: "Product name require!",
+              },
+            ]}
+          >
+            <Input
+              className="form__input"
+              placeholder="Product Name *"
+              size="large"
+            />
+          </Form.Item>
+          <Form.Item
+            name="product_price"
+            rules={[
+              {
+                required: true,
+                message: "Please input price!",
+              },
+            ]}
+          >
+            <InputNumber
+              className="form__input"
+              placeholder="Product Price *"
+            />
+          </Form.Item>
+          <Form.Item
+            name="service_phone"
+            rules={[
+              {
+                validator: phoneNumberValidator,
+              },
+            ]}
+          >
+            <Input
+              className="form__input"
+              placeholder="Service Phone* +959"
+              size="large"
+            />
+          </Form.Item>
+          <Form.Item
+            name="customer_phone"
+            rules={[
+              {
+                validator: phoneNumberValidator,
+              },
+            ]}
+          >
+            <Input
+              className="form__input"
+              placeholder="Customer Phone* +959"
+              size="large"
+            />
+          </Form.Item>
+          <Form.Item name="note">
+            <TextArea
+              rows={4}
+              className="form__input"
+              placeholder="Note"
+              maxLength={100}
+            />
+          </Form.Item>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="home__order_list__input_form__button"
+          >
+            Add
+          </Button>
+        </Form>
+      </Modal>
+    </>
   );
 }
 
