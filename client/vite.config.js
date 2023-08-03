@@ -14,5 +14,4 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "./src/assets"),
     },
   },
-  root: "./src" // Add this line to the config
 });
