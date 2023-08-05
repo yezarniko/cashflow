@@ -10,7 +10,6 @@
   user-select: none; /* Standard syntax */
 }
 
-
 /**
  * Mixin to center the content both horizontally and vertically.
  *
@@ -24,7 +23,6 @@
   justify-content: center;
   align-items: center;
 }
-
 
 /**
  * Mixin to style headings.
@@ -46,7 +44,6 @@
   }
 }
 
-
 /**
  * Mixin to style the selected menu item.
  *
@@ -61,7 +58,6 @@
   backdrop-filter: blur(10px);
   background: $color;
 }
-
 
 @mixin menu__item() {
   display: flex;
@@ -81,11 +77,8 @@
   }
 }
 
-
-
-@mixin table_content($height) {
+@mixin table_content() {
   display: flex;
-  height: $height;
 
   div {
     color: var(--secondary-color);
@@ -95,7 +88,7 @@
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.055rem;
-    padding: 1em 0;
+    padding: 1.35em 0;
     text-align: center;
 
     &:not(:first-child) {
@@ -110,9 +103,8 @@
   }
 }
 
-
 @mixin recent_sale_table_content() {
-  @include table_content(16.7%);
+  @include table_content();
 
   div {
     &:nth-last-child(1) {

@@ -19,7 +19,7 @@
 
 body {
   font-family: "Poppins";
-  e a {
+  a {
     text-decoration: none;
   }
   ul {
@@ -69,6 +69,7 @@ img {
 @import "./sidebar";
 @import "./modal";
 @import "./form";
+@import "./loading";
 
 // Pages
 @import "./pages/_home";

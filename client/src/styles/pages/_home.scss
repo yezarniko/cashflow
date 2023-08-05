@@ -123,7 +123,7 @@
         @include recent_sale_table_content;
 
         &:hover {
-          box-shadow: 11px 4px 11px 0px rgba(21, 122, 254, 0.3);
+          box-shadow: 11px 4px 11px 0px rgba(21, 122, 254, 0.25);
           border-top: 1px solid rgba(21, 122, 254, 0.19);
           border-bottom: 1px solid rgba(21, 122, 254, 0.19);
         }
