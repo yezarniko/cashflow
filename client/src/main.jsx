@@ -1,9 +1,9 @@
 // React imports
-import React from "react"; // Importing the React library
-import ReactDOM from "react-dom/client"; // Importing the ReactDOM library (client-specific)
+import React from "react";
+import ReactDOM from "react-dom/client";
 
 // Local component imports
-import App from "./App.jsx"; // Importing the App component
+import App from "./App.jsx";
 
 // Styles imports
 import "./styles/main.scss"; // Importing the main.scss stylesheet
