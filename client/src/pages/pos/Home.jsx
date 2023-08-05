@@ -154,7 +154,6 @@ function RecentSaleTableContent() {
  *
  * @function
  * @name DateAndTime
- * @kind function
  * @returns {React.JSX.Element}
  */
 function DateAndTime() {
@@ -299,7 +298,7 @@ function OrderList() {
  * @returns {React.JSX.Element}
  */
 function AddOrderButton() {
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <>
       <div
@@ -315,7 +314,9 @@ function AddOrderButton() {
 }
 
 /**
- * Renders a form component to add orders to the order list.
+ * The function `OrderListInput` is a React component that takes two props: `isModalOpen` and `setIsModalOpen`.
+ * The `isModalOpen` prop is used to determine whether a modal is currently open or not, and
+ * the `setIsModalOpen` prop is used to update the state of the modal.
  *
  * @typedef {Object} FormValues
  * @property {string} product_name
@@ -350,7 +351,7 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
   });
 
   /**
-   * phoneNumberValidator is an asynchronous function that performs custom validation
+   * `phoneNumberValidator` is an asynchronous function that performs custom validation
    * for the `service phone` and `customer phone` fields.
    *
    * @async

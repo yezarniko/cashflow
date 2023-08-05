@@ -2,6 +2,8 @@
 // React imports
 import React, { useContext, useEffect, useState } from "react";
 
+import { useLocation } from "react-router-dom";
+
 // Asset imports
 import HomeLogo from "@assets/Home.png";
 import Logo from "@assets/Logo.png";
@@ -11,6 +13,7 @@ import SaleLogo from "@assets/Sale.png";
 import SettingsLogo from "@assets/Settings.png";
 import StatisticsLogo from "@assets/Statistics.png";
 import ProfileImg from "@assets/profile.jpg";
+import { Link } from "react-router-dom";
 
 /**
  * The `Sidebar` function is a React component that renders the sidebar.
@@ -35,10 +38,10 @@ function Sidebar() {
           className="sidebar__account_profile__img"
         />
         <p className="sidebar__account_profile__name">Admin</p>
-        <div className="sidebar__settings">
+        <Link to="/settings" className="sidebar__settings">
           <img src={SettingsLogo} alt="" className="sidebar__settings__logo" />
           <div className="sidebar__settings__text">Settings</div>
-        </div>
+        </Link>
       </div>
     </div>
   );
@@ -69,7 +72,8 @@ const CurrentPageContext = React.createContext(null);
  */
 function Menu() {
 
-  const [currentPage, setCurrentPage] = useState("Home");
+  const location = useLocation();
+  const [currentPage, setCurrentPage] = useState(location.pathname);
 
   useEffect(() => {
     console.log("Render Menu!");
@@ -86,11 +90,11 @@ function Menu() {
      */
     <CurrentPageContext.Provider value={{ currentPage, setCurrentPage }}>
       <ul className="sidebar__menu">
-        <MenuItem Logo={HomeLogo} text="Home" />
-        <MenuItem Logo={SaleLogo} text="Sale" />
-        <MenuItem Logo={ProductsLogo} text="Products" />
-        <MenuItem Logo={LogsLogo} text="Logs" />
-        <MenuItem Logo={StatisticsLogo} text="Statistics" />
+        <MenuItem Logo={HomeLogo} text="Home" link="/" />
+        <MenuItem Logo={SaleLogo} text="Sale" link="/sale" />
+        <MenuItem Logo={ProductsLogo} text="Products" link="/products" />
+        <MenuItem Logo={LogsLogo} text="Logs" link="/logs" />
+        <MenuItem Logo={StatisticsLogo} text="Statistics" link="/statistics" />
       </ul>
     </CurrentPageContext.Provider>
   );
@@ -108,23 +112,26 @@ function Menu() {
  * @param {Object} props - The component props.
  * @param {string} props.Logo - The URL of the logo image for the menu item.
  * @param {string} props.text - The text for the menu item.
+ * @param {string} props.link - The URL of Page which will route
  *
  * @returns {React.JSX.Element}
  */
-function MenuItem({ Logo, text }) {
+function MenuItem({ Logo, text, link }) {
   const { currentPage, setCurrentPage } = useContext(CurrentPageContext);
 
   return (
-    <li
-      className={
-        "sidebar__menu__item " +
-        (currentPage == text ? "sidebar__menu__item-selected" : "")
-      }
-      onClick={() => setCurrentPage(text)}
-    >
-      <img src={Logo} alt="" className="sidebar__menu__item__logo" />
-      <div className="sidebar__menu__item__text">{text}</div>
-    </li>
+    <Link to={link}>
+      <li
+        className={
+          "sidebar__menu__item " +
+          (currentPage == link ? "sidebar__menu__item-selected" : "")
+        }
+        onClick={() => setCurrentPage(link)}
+      >
+        <img src={Logo} alt="" className="sidebar__menu__item__logo" />
+        <div className="sidebar__menu__item__text">{text}</div>
+      </li>
+    </Link>
   );
 }
 
