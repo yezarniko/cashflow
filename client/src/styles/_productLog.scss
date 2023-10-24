@@ -1,0 +1,39 @@
+.product__log {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+
+  h3 {
+    color: var(--secondary-color);
+    margin-bottom: 1em;
+    text-align: center;
+  }
+
+  &__product__info {
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    margin-block: 2em;
+    color: var(--secondary-color);
+
+    &__title {
+      display: flex;
+      flex-direction: row;
+      line-height: 2em;
+      width: 90%;
+      margin-inline: auto;
+      justify-content: space-between;
+      align-items: center;
+      //   margin-left: 4em;
+
+      &-id {
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+      &-branch {
+        font-weight: 600;
+        color: #ff6712;
+      }
+    }
+  }
+}

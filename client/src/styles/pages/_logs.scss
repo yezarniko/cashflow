@@ -1,0 +1,75 @@
+.logs {
+  width: 95%;
+  margin: 0 auto;
+  height: 200vh;
+  &__sale_logs {
+    margin-top: 3em;
+    padding-block: 2em;
+    width: 100%;
+    box-shadow: 0px 4px 22px 0px rgba(21, 122, 254, 0.15);
+    &__header,
+    &__table {
+      width: 95%;
+      margin-inline: auto;
+    }
+    &__header {
+      display: flex;
+      align-items: center;
+      & > *:not(:last-child) {
+        margin-right: 1em;
+      }
+    }
+    &__table {
+      margin-top: 2em;
+      &__header {
+        background: rgba(217, 217, 217, 0.28);
+        margin-bottom: 1em;
+      }
+      &__header,
+      &__item {
+        display: flex;
+        justify-content: space-between;
+        color: var(--secondary-color);
+        font-weight: 500;
+        font-size: 1rem;
+        padding: 0.5em 0;
+
+        & > div {
+          text-align: center;
+          // border: 1px solid black;
+        }
+
+        & > div:is(:first-child, :nth-child(2)) {
+          width: 25%;
+        }
+
+        & > div:is(:nth-child(3), :nth-child(4), :nth-child(5)) {
+          width: 13%;
+        }
+        & > :nth-child(6) {
+          width: 10%;
+        }
+      }
+      &__item {
+        flex-wrap: wrap;
+        margin-bottom: 0.5em;
+        &-selected {
+          box-shadow: -1px -1px 7px 2px rgba(0, 0, 0, 0.089) inset;
+          & > div:last-child {
+            background-color: black;
+            width: 100%;
+          }
+        }
+        & > div:nth-child(5) > div {
+          font-size: 0.9rem;
+          font-weight: 600;
+          width: 50%;
+          margin-inline: auto;
+          border-radius: 2em;
+          line-height: 200%;
+          color: #fff;
+        }
+      }
+    }
+  }
+}

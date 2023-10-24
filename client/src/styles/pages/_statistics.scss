@@ -1,0 +1,128 @@
+.statistics {
+  width: 98%;
+  height: 90%;
+  margin: 0 auto;
+  margin-top: 2em;
+  &__container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    & > div {
+      height: 100%;
+      &:first-child {
+        width: 40%;
+        // background: rgba(255, 0, 0, 0.123);
+      }
+      &:last-child {
+        width: 60%;
+        // background: rgba(0, 0, 255, 0.123);
+      }
+    }
+  }
+  &__duration_menu {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    &__item {
+      color: var(--secondary-color);
+      font-weight: 500;
+      box-sizing: content-box;
+      width: 80px;
+      text-align: center;
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.25);
+
+      &-current {
+        border: 1px solid var(--secondary-color);
+      }
+
+      &:nth-child(2) {
+        margin-inline: 1em;
+      }
+    }
+  }
+  &__line_charts {
+    margin-top: 1em;
+    box-sizing: border-box;
+    height: 90%;
+    width: 98%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    &__correlation {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      &__selector {
+        background-color: #fff;
+        box-shadow: 0px 1px 26px 0px rgba(21, 245, 192, 0.19);
+        padding: 1em;
+        cursor: pointer;
+        & > div {
+          color: var(--secondary-color);
+          display: flex;
+          align-items: center;
+        }
+        &__line {
+          width: 30px;
+          height: 2px;
+          margin-right: 1em;
+        }
+        &__text {
+          font-weight: 500;
+        }
+      }
+    }
+  }
+  &__accountant {
+    &__container {
+      height: 20%;
+    }
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 15px;
+    background: rgba(231, 226, 226, 0.43);
+    margin-left: 2em;
+    padding: 1.5em;
+
+    &__amount {
+      display: flex;
+      flex-direction: column;
+      font-size: 1.3rem;
+      margin-right: 2em;
+      & > div:first-child {
+        font-weight: 700;
+        color: var(--secondary-color);
+        margin-bottom: 0.7em;
+      }
+
+      & > div:last-child {
+        font-weight: 500;
+        color: var(--primary-color);
+      }
+    }
+    &__img {
+      width: 50px;
+      aspect-ratio: 1/1;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+  &__barchart {
+    &__container {
+      height: 80%;
+      display: flex;
+      align-items: flex-end;
+    }
+  }
+}

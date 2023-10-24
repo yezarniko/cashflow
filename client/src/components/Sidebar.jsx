@@ -32,12 +32,6 @@ function Sidebar() {
       </div>
       <Menu />
       <div className="sidebar__account_profile">
-        <img
-          src={ProfileImg}
-          alt=""
-          className="sidebar__account_profile__img"
-        />
-        <p className="sidebar__account_profile__name">Admin</p>
         <Link to="/settings" className="sidebar__settings">
           <img src={SettingsLogo} alt="" className="sidebar__settings__logo" />
           <div className="sidebar__settings__text">Settings</div>
@@ -71,7 +65,6 @@ const CurrentPageContext = React.createContext(null);
  * @returns {React.JSX.Element}
  */
 function Menu() {
-
   const location = useLocation();
   const [currentPage, setCurrentPage] = useState(location.pathname);
 

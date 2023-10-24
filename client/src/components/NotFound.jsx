@@ -1,42 +1,16 @@
-/* React */
 import React from "react";
-
-import fourZfour from "@assets/404.gif";
+import Animation_404 from "@assets/404_animation.gif";
 
 function NotFound() {
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100vh",
-      }}
-    >
-      <img
-        src={fourZfour}
-        style={{
-          width: "100%",
-          height: "100vh",
-          objectFit: "cover",
-          position: "absolute",
-          userSelect: "none",
-          zIndex: -1,
-        }}
-      />
-      <h2
-        style={{
-          textAlign: "center",
-          height: "100vh",
-          lineHeight: "100vh",
-          fontSize: "4em",
-          color: "transparent",
-          backgroundColor: "transparent",
-          "-webkit-background-clip": "text",
-          backgroundClip: "text",
-          border: "1px solid black",
-        }}
-      >
-        404 NOT FOUND
-      </h2>
+    <div className="notFound__animation">
+      <div className="notFound__animation__photo">
+        <img src={Animation_404} />
+      </div>
+      <div className="notFound__animation__message">
+        Site not found!
+        <p>The site you're looking for is not here.</p>
+      </div>
     </div>
   );
 }

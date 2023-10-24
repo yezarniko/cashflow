@@ -25,6 +25,7 @@ body {
   ul {
     list-style: none;
   }
+  user-select: none;
 }
 
 // Mixins
@@ -38,10 +39,12 @@ img {
 .container {
   width: 100%;
   height: 100vh;
+  position: relative;
 
   max-width: 1577px;
   min-width: 1260px;
   min-height: 600px;
+  max-height: 1000px;
 
   margin: 0 auto;
   overflow: hidden;
@@ -54,6 +57,7 @@ img {
 
   .dashboard {
     width: 82%;
+    max-width: 1650px;
     margin: 0 auto;
     min-height: 100%;
     overflow: scroll;
@@ -71,7 +75,22 @@ img {
 @import "./form";
 @import "./loading";
 @import "./ant";
+@import "./small_components";
+@import "./appendProduct";
+@import "./productLog";
 
 // Pages
 @import "./pages/_home";
 @import "./pages/_sale";
+@import "./pages/products";
+@import "./pages/statistics";
+@import "./pages/logs";
+@import "./pages/add_new_product";
+@import "./pages/settings";
+@import "./pages/forgotPassword";
+
+// Auth Pages
+@import "./pages/login";
+@import "./pages/signup";
+@import "./pages/not_found";
+@import "./pages/mailverify";

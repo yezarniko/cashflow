@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 // Ant Design is a comprehensive and popular UI library
 // It offers a wide range of reusable and customizable React components
 import { Form, Input, InputNumber, Modal, Button, message } from "antd";
+import { InboxOutlined } from "@ant-design/icons";
 const { TextArea } = Input;
 
 // Yup is a powerful validation library used for form validation,
@@ -17,6 +18,10 @@ import PlusIcon from "@assets/add.png";
 import BestSellerImage from "@assets/bestseller.png";
 import ProductImg from "@assets/herballines-shampoo.png";
 import NotificationSound from "@assets/notification.mp3";
+import RemovedProductImg from "@assets/delete-product.png";
+
+import { useUser } from "@/hooks/useUser";
+import { gql, useQuery } from "@apollo/client";
 
 /**
  * The `Home` function is a React component that represents the home page.
@@ -29,13 +34,54 @@ import NotificationSound from "@assets/notification.mp3";
  * @returns {React.JSX.Element}
  */
 function Home() {
-  return (
-    <div className="home">
-      <RecentSaleDash />
-      <Upsale />
-      <OrderList />
-    </div>
-  );
+  const { currentUser } = useUser();
+
+  const GET_RECENT_SALE_LOGS = gql`
+    query GetRecentSaleLogs(
+      $userId: String!
+      $token: String!
+      $branchId: String!
+      $branchToken: String!
+    ) {
+      recentSaleLogs(
+        userId: $userId
+        token: $token
+        branchId: $branchId
+        branchToken: $branchToken
+      ) {
+        name
+        price
+        count
+        productImg
+      }
+    }
+  `;
+
+  const { data, loading, error, refetch } = useQuery(GET_RECENT_SALE_LOGS, {
+    variables: {
+      userId: currentUser.uid,
+      token: currentUser.accessToken,
+      branchId: "97642144875",
+      branchToken: "20746829937",
+    },
+  });
+
+  useEffect(() => {
+    if (data) {
+      refetch();
+    }
+  }, []);
+
+  if (loading) return <>Loading...!!!</>;
+  if (!loading) {
+    return (
+      <div className="home">
+        <RecentSaleDash {...{ data, loading }} />
+        <Upsale data={data} />
+        <OrderList />
+      </div>
+    );
+  }
 }
 
 /**
@@ -43,10 +89,10 @@ function Home() {
  *
  * @function
  * @name RecentSaleDash
- * @kind function
+ * @kind functionrgba(190, 209, 246, 0.5)
  * @returns {React.JSX.Element}
  */
-function RecentSaleDash() {
+function RecentSaleDash({ data, loading }) {
   useEffect(() => {
     console.log("render Recent Sale!");
   });
@@ -55,7 +101,8 @@ function RecentSaleDash() {
     <div className="home__recent_sale">
       <div className="home__recent_sale__header">
         <div className="home__recent_sale__header__total_sale">
-          Today Sale : <span>2000000</span>
+          Today Sale :{" "}
+          <span>{data.recentSaleLogs?.reduce((c, b) => c + b.price, 0)}</span>
           <span>
             ks
             <img src={FlagImg} />
@@ -63,7 +110,7 @@ function RecentSaleDash() {
         </div>
         <DateAndTime />
       </div>
-      <RecentSaleTable />
+      <RecentSaleTable {...{ data, loading }} />
     </div>
   );
 }
@@ -78,26 +125,30 @@ function RecentSaleDash() {
  * @kind function
  * @returns {React.JSX.Element}
  */
-function RecentSaleTable() {
+function RecentSaleTable({ data, loading }) {
   // Create a reference to the table element using the useRef hook
   const tableRef = useRef(null);
 
   // useEffect hook to set the position of the table based on the window height
   useEffect(() => {
-    // Get the current table element using the ref
-    const table = tableRef.current;
+    if (!loading) {
+      // Get the current table element using the ref
+      const table = tableRef.current;
 
-    // Get the current position of the table
-    const currentPosition = table.offsetTop;
+      // Get the current position of the table
+      const currentPosition = table.offsetTop;
 
-    // Get the window height to calculate the bottom offset
-    const windowHeight = window.innerHeight;
-    const bottomOffset = windowHeight * 0.05; // 5% of window height
+      // Get the window height to calculate the bottom offset
+      const windowHeight = window.innerHeight;
+      const bottomOffset = windowHeight * 0.05; // 5% of window height
 
-    // Set the table position using inline styles
-    table.style.top = `${currentPosition}px`;
-    table.style.bottom = `${bottomOffset}px`;
-  }, []);
+      // Set the table position using inline styles
+      table.style.top = `${currentPosition}px`;
+      table.style.bottom = `${bottomOffset}px`;
+    }
+  }, [loading]);
+
+  if (loading) return <>Loading..!!</>;
 
   return (
     <>
@@ -109,14 +160,48 @@ function RecentSaleTable() {
           <div>Amounts</div>
         </div>
         <div className="home__recent_sale__table__contents">
+          {data.recentSaleLogs.length > 0 ? (
+            data.recentSaleLogs.map((s) =>
+              s.name ? (
+                <RecentSaleTableContent
+                  key={`${s.name}${s.count}${Math.random()}`}
+                  {...s}
+                />
+              ) : (
+                ""
+              )
+            )
+          ) : (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "100%",
+                  fontWeight: "600",
+                  fontSize: ".9rem",
+                }}
+              >
+                <InboxOutlined
+                  style={{
+                    fontSize: "4rem",
+                    color: "var(--secondary-color)",
+                  }}
+                />
+                <p>Empty Sales</p>
+              </div>
+            </>
+          )}
+
+          {/* <RecentSaleTableContent />
           <RecentSaleTableContent />
           <RecentSaleTableContent />
           <RecentSaleTableContent />
           <RecentSaleTableContent />
           <RecentSaleTableContent />
-          <RecentSaleTableContent />
-          <RecentSaleTableContent />
-          <RecentSaleTableContent />
+          <RecentSaleTableContent /> */}
         </div>
       </div>
     </>
@@ -133,15 +218,15 @@ function RecentSaleTable() {
  * @kind function
  * @returns {React.JSX.Element}
  */
-function RecentSaleTableContent() {
+function RecentSaleTableContent({ productImg, name, price, count }) {
   return (
     <div className="home__recent_sale__table__content">
       <div>
-        <img src={ProductImg} alt="" />
+        <img src={productImg == "" ? RemovedProductImg : productImg} alt="" />
       </div>
-      <div>Herbaline Shampoo</div>
-      <div>1</div>
-      <div>12000</div>
+      <div>{name}</div>
+      <div>{count}</div>
+      <div>{price}</div>
     </div>
   );
 }
@@ -211,47 +296,105 @@ function DateAndTime() {
  * @kind function
  * @returns {React.JSX.Element}
  */
-function Upsale() {
+function Upsale({ data }) {
+  const [upSaleList, setUpSaleList] = useState([]);
+
+  useEffect(() => {
+    let _upSaleList = {};
+    console.log(data.recentSaleLogs);
+    data.recentSaleLogs.forEach((p) => {
+      if (p.name) {
+        if (_upSaleList[p.name]) {
+          _upSaleList[p.name] += p.count;
+        } else {
+          _upSaleList[p.name] = p.count;
+        }
+      }
+    });
+
+    const sortedArray = Object.entries(_upSaleList).sort(
+      ([, a], [, b]) => a - b
+    );
+    sortedArray.reverse();
+    console.log(sortedArray);
+    setUpSaleList(sortedArray);
+    // console.log(upSaleList);
+  }, [data]);
+
   return (
     <div className="home__upsale">
       <h3 className="home__upsale__heading">Today's Upsale</h3>
-      <div className="home__upsale__table">
-        <div className="home__upsale__table__content">
-          <div>
-            <img src={BestSellerImage} alt="" />
+      {upSaleList.length >= 5 ? (
+        <div className="home__upsale__table">
+          <div className="home__upsale__table__content">
+            <div>
+              <img src={BestSellerImage} alt="" />
+            </div>
+            <div className="home__upsale__table__content__product_name">
+              {upSaleList && upSaleList[0][0]}
+            </div>
+            <div className="home__upsale__table__content__sale_counts">
+              {upSaleList && upSaleList[0][1]}
+            </div>
           </div>
-          <div className="home__upsale__table__content__product_name">Eggs</div>
-          <div className="home__upsale__table__content__sale_counts">50</div>
-        </div>
-        <div className="home__upsale__table__content">
-          <div>2</div>
-          <div className="home__upsale__table__content__product_name">
-            Coca-cola
+          <div className="home__upsale__table__content">
+            <div>2</div>
+            <div className="home__upsale__table__content__product_name">
+              {upSaleList && upSaleList[1][0]}
+            </div>
+            <div className="home__upsale__table__content__sale_counts">
+              {upSaleList && upSaleList[1][1]}
+            </div>
           </div>
-          <div className="home__upsale__table__content__sale_counts">30</div>
-        </div>
-        <div className="home__upsale__table__content">
-          <div>3</div>
-          <div className="home__upsale__table__content__product_name">
-            Ubrand Book
+          <div className="home__upsale__table__content">
+            <div>3</div>
+            <div className="home__upsale__table__content__product_name">
+              {upSaleList && upSaleList[2][0]}
+            </div>
+            <div className="home__upsale__table__content__sale_counts">
+              {upSaleList && upSaleList[2][1]}
+            </div>
           </div>
-          <div className="home__upsale__table__content__sale_counts">25</div>
-        </div>
-        <div className="home__upsale__table__content">
-          <div>4</div>
-          <div className="home__upsale__table__content__product_name">
-            Ovaltine
+          <div className="home__upsale__table__content">
+            <div>4</div>
+            <div className="home__upsale__table__content__product_name">
+              {upSaleList && upSaleList[3][0]}
+            </div>
+            <div className="home__upsale__table__content__sale_counts">
+              {upSaleList && upSaleList[3][1]}
+            </div>
           </div>
-          <div className="home__upsale__table__content__sale_counts">24</div>
-        </div>
-        <div className="home__upsale__table__content">
-          <div>5</div>
-          <div className="home__upsale__table__content__product_name">
-            Mama noodle
+          <div className="home__upsale__table__content">
+            <div>5</div>
+            <div className="home__upsale__table__content__product_name">
+              {upSaleList && upSaleList[4][0]}
+            </div>
+            <div className="home__upsale__table__content__sale_counts">
+              {upSaleList && upSaleList[4][1]}
+            </div>
           </div>
-          <div className="home__upsale__table__content__sale_counts">20</div>
         </div>
-      </div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            fontWeight: "600",
+            fontSize: ".9rem",
+          }}
+        >
+          <InboxOutlined
+            style={{
+              fontSize: "4rem",
+              color: "var(--secondary-color)",
+            }}
+          />
+          <p>Products will be list soon</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -273,6 +416,7 @@ function OrderList() {
         <h3 className="home__order_list__heading">Order List</h3>
         <div className="home__order_list__contents">
           <OrderListContent />
+          {/* <OrderListContent />
           <OrderListContent />
           <OrderListContent />
           <OrderListContent />
@@ -280,8 +424,7 @@ function OrderList() {
           <OrderListContent />
           <OrderListContent />
           <OrderListContent />
-          <OrderListContent />
-          <OrderListContent />
+          <OrderListContent /> */}
         </div>
         <AddOrderButton />
       </div>

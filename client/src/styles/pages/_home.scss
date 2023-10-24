@@ -133,8 +133,8 @@
           @include center_this;
           img {
             overflow: hidden;
-            width: 20%;
-            height: 80%;
+            width: 100%;
+            // height: 80px;
             object-position: top;
             object-fit: cover;
           }
