@@ -22,6 +22,7 @@ import RemovedProductImg from "@assets/delete-product.png";
 
 import { useUser } from "@/hooks/useUser";
 import { gql, useQuery } from "@apollo/client";
+import { useDatabase } from "@hooks/useDatabase";
 
 /**
  * The `Home` function is a React component that represents the home page.
@@ -57,27 +58,73 @@ function Home() {
     }
   `;
 
-  const { data, loading, error, refetch } = useQuery(GET_RECENT_SALE_LOGS, {
-    variables: {
-      userId: currentUser.uid,
-      token: currentUser.accessToken,
-      branchId: "97642144875",
-      branchToken: "20746829937",
-    },
+  // const { data, loading, error, refetch } = useQuery(GET_RECENT_SALE_LOGS, {
+  //   variables: {
+  //     userId: currentUser.uid,
+  //     token: currentUser.accessToken,
+  //     branchId: "97642144875",
+  //     branchToken: "20746829937",
+  //   },
+  // });
+
+  const [loading, setLoading] = useState(true);
+  const { sales } = useDatabase();
+  const [currentBranch, setCurrentBranch] = useState("main");
+  const [recentSaleLogs, setRecentSaleLogs] = useState([]);
+
+  useEffect(() => {
+    if (sales) {
+      setLoading(false);
+      console.log("sales: ", sales);
+    }
   });
 
   useEffect(() => {
-    if (data) {
-      refetch();
+    const date = new Date();
+
+    const formattedDate = `${date.getDate()}-${
+      date.getMonth() + 1
+    }-${date.getFullYear()}`;
+
+    if (sales) {
+      if (sales[currentBranch]) {
+        console.log("today sales: ", sales[currentBranch]);
+        console.log(formattedDate);
+        if (sales[currentBranch][formattedDate]) {
+          const todaySales = sales[currentBranch][formattedDate];
+          console.log("today sales: ", todaySales);
+
+          let todaySaleProducts = Object.values(todaySales)
+            .map((sale) => sale.products)
+            .flat(1);
+
+          todaySaleProducts.reverse();
+
+          console.log(todaySaleProducts);
+
+          // todaySaleProducts = Object.values(
+          //   todaySaleProducts.reduce((acc, item) => {
+          //     if (!acc[item.id]) {
+          //       acc[item.id] = { ...item };
+          //     } else {
+          //       acc[item.id].count += item.count;
+          //     }
+          //     return acc;
+          //   }, {})
+          // );
+
+          setRecentSaleLogs(todaySaleProducts);
+        }
+      }
     }
-  }, []);
+  }, [sales]);
 
   if (loading) return <>Loading...!!!</>;
   if (!loading) {
     return (
       <div className="home">
-        <RecentSaleDash {...{ data, loading }} />
-        <Upsale data={data} />
+        <RecentSaleDash data={recentSaleLogs} {...{ loading, currentBranch }} />
+        <Upsale data={recentSaleLogs} />
         <OrderList />
       </div>
     );
@@ -92,7 +139,7 @@ function Home() {
  * @kind functionrgba(190, 209, 246, 0.5)
  * @returns {React.JSX.Element}
  */
-function RecentSaleDash({ data, loading }) {
+function RecentSaleDash({ data, loading, currentBranch }) {
   useEffect(() => {
     console.log("render Recent Sale!");
   });
@@ -102,15 +149,12 @@ function RecentSaleDash({ data, loading }) {
       <div className="home__recent_sale__header">
         <div className="home__recent_sale__header__total_sale">
           Today Sale :{" "}
-          <span>{data.recentSaleLogs?.reduce((c, b) => c + b.price, 0)}</span>
-          <span>
-            ks
-            <img src={FlagImg} />
-          </span>
+          <span>{data?.reduce((c, b) => c + b.price * b.count, 0)}</span>
+          <span>ks</span>
         </div>
         <DateAndTime />
       </div>
-      <RecentSaleTable {...{ data, loading }} />
+      <RecentSaleTable {...{ data, loading, currentBranch }} />
     </div>
   );
 }
@@ -125,13 +169,13 @@ function RecentSaleDash({ data, loading }) {
  * @kind function
  * @returns {React.JSX.Element}
  */
-function RecentSaleTable({ data, loading }) {
+function RecentSaleTable({ data, loading, currentBranch }) {
   // Create a reference to the table element using the useRef hook
   const tableRef = useRef(null);
 
   // useEffect hook to set the position of the table based on the window height
   useEffect(() => {
-    if (!loading) {
+    if (!loading && data) {
       // Get the current table element using the ref
       const table = tableRef.current;
 
@@ -149,6 +193,7 @@ function RecentSaleTable({ data, loading }) {
   }, [loading]);
 
   if (loading) return <>Loading..!!</>;
+  if (!data) return <>Loading..!!</>;
 
   return (
     <>
@@ -160,12 +205,13 @@ function RecentSaleTable({ data, loading }) {
           <div>Amounts</div>
         </div>
         <div className="home__recent_sale__table__contents">
-          {data.recentSaleLogs.length > 0 ? (
-            data.recentSaleLogs.map((s) =>
+          {data.length > 0 ? (
+            data.map((s) =>
               s.name ? (
                 <RecentSaleTableContent
                   key={`${s.name}${s.count}${Math.random()}`}
                   {...s}
+                  currentBranch={currentBranch}
                 />
               ) : (
                 ""
@@ -218,15 +264,26 @@ function RecentSaleTable({ data, loading }) {
  * @kind function
  * @returns {React.JSX.Element}
  */
-function RecentSaleTableContent({ productImg, name, price, count }) {
+function RecentSaleTableContent({ name, price, count, id, currentBranch }) {
+  const [productImg, setProductImg] = useState("");
+  const { getProductImg } = useDatabase();
+
+  useEffect(() => {
+    getProductImg(id, currentBranch, setProductImg);
+  }, []);
+
   return (
     <div className="home__recent_sale__table__content">
       <div>
-        <img src={productImg == "" ? RemovedProductImg : productImg} alt="" />
+        <img
+          src={productImg == "" ? RemovedProductImg : productImg}
+          alt=""
+          className="p-5"
+        />
       </div>
       <div>{name}</div>
       <div>{count}</div>
-      <div>{price}</div>
+      <div>{price * count}</div>
     </div>
   );
 }
@@ -301,8 +358,8 @@ function Upsale({ data }) {
 
   useEffect(() => {
     let _upSaleList = {};
-    console.log(data.recentSaleLogs);
-    data.recentSaleLogs.forEach((p) => {
+    console.log(data);
+    data.forEach((p) => {
       if (p.name) {
         if (_upSaleList[p.name]) {
           _upSaleList[p.name] += p.count;
@@ -318,8 +375,10 @@ function Upsale({ data }) {
     sortedArray.reverse();
     console.log(sortedArray);
     setUpSaleList(sortedArray);
-    // console.log(upSaleList);
   }, [data]);
+  useEffect(() => {
+    console.log("upSaleList", upSaleList);
+  }, [upSaleList]);
 
   return (
     <div className="home__upsale">
@@ -410,21 +469,18 @@ function Upsale({ data }) {
  * @returns {React.JSX.Element}
  */
 function OrderList() {
+  const { orders } = useDatabase();
+
   return (
     <>
       <div className="home__order_list">
         <h3 className="home__order_list__heading">Order List</h3>
         <div className="home__order_list__contents">
-          <OrderListContent />
-          {/* <OrderListContent />
-          <OrderListContent />
-          <OrderListContent />
-          <OrderListContent />
-          <OrderListContent />
-          <OrderListContent />
-          <OrderListContent />
-          <OrderListContent />
-          <OrderListContent /> */}
+          {orders &&
+            orders.main.length > 0 &&
+            orders.main.map((order, index) => (
+              <OrderListContent key={index} {...{ order, index }} />
+            ))}
         </div>
         <AddOrderButton />
       </div>
@@ -480,6 +536,8 @@ function AddOrderButton() {
 function OrderListInput({ isModalOpen, setIsModalOpen }) {
   // initialize the form instance.
   const [form] = Form.useForm();
+
+  const { createOrder, orders } = useDatabase();
 
   // message API object, which is used to notify message.
   const [messageApi, contextHolder] = message.useMessage();
@@ -547,6 +605,8 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
    * @returns {void}
    */
   function handleOnSubmit(values) {
+    console.log(values);
+    createOrder([...orders["main"], values], "main");
     form.resetFields(); // reset form
     setIsModalOpen(false); // close model
     playNotificationSound(); // play notification sound
@@ -595,17 +655,18 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
             />
           </Form.Item>
           <Form.Item
-            name="product_price"
+            name="customer_name"
             rules={[
               {
                 required: true,
-                message: "Please input price!",
+                message: "Customer name require!",
               },
             ]}
           >
-            <InputNumber
+            <Input
               className="form__input"
-              placeholder="Product Price *"
+              placeholder="Customer Name *"
+              size="large"
             />
           </Form.Item>
           <Form.Item
@@ -636,14 +697,14 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
               size="large"
             />
           </Form.Item>
-          <Form.Item name="note">
+          {/* <Form.Item name="note">
             <TextArea
               rows={4}
               className="form__input"
               placeholder="Note"
               maxLength={100}
             />
-          </Form.Item>
+          </Form.Item> */}
 
           <Button
             type="primary"
@@ -668,29 +729,78 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
  * @kind function
  * @returns {React.JSX.Element}
  */
-function OrderListContent() {
+function OrderListContent({ order, index }) {
   const [isChecked, setIsChecked] = useState(false);
 
-  const handleCheckboxChange = () => {
-    setIsChecked(!isChecked);
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { orders, createOrder, completeOrder } = useDatabase();
+
   return (
-    <div
-      className={
-        "home__order_list__content " +
-        (isChecked ? "home__order_list__content-checked" : "")
-      }
-    >
-      <div>1</div>
-      <div>LG TV</div>
-      <div>200k</div>
-      <input
-        type="checkbox"
-        checked={isChecked}
-        onChange={handleCheckboxChange}
-      />
-      <div>cash</div>
-    </div>
+    <>
+      <Modal
+        width="25%"
+        open={isModalOpen}
+        onOk={() => setIsModalOpen(false)}
+        onCancel={() => setIsModalOpen(false)}
+        className="modal"
+        footer={null}
+      >
+        <h3 className="font-sans text-base mb-8 font-bold">Order Details</h3>
+        <div className="flex w-full h-32">
+          <div className="font-sans text-base mr-4 w-1/2">
+            <div className="mb-3">Product: </div>
+            <div className="mb-3">Customer Name: </div>
+            <div className="mb-3">Customer Phone: </div>
+            <div className="mb-3">Service Phone: </div>
+          </div>
+
+          <div className="font-sans text-base w-1/2">
+            <div className="mb-3">
+              {order.product_name.length >= 20
+                ? order.product_name.slice(0, 20) + ".."
+                : order.product_name}
+            </div>
+            <div className="mb-3">
+              {order.customer_name.length >= 20
+                ? order.customer_name.slice(0, 20) + ".."
+                : order.customer_name}
+            </div>
+            <div className="mb-3">{order.customer_phone}</div>
+            <div className="mb-3">{order.service_phone}</div>
+          </div>
+        </div>
+      </Modal>
+      <div
+        className={
+          "cursor-pointer hover:bg-indigo-200/50 home__order_list__content" +
+          (order.isArrived ? " home__order_list__content-checked" : "")
+        }
+      >
+        <div className="ml-2 mr-5" onClick={() => setIsModalOpen(true)}>
+          {order.product_name.length >= 20
+            ? order.product_name.slice(0, 20) + ".."
+            : order.product_name}
+        </div>
+        <div onClick={() => setIsModalOpen(true)}></div>
+        <input
+          type="checkbox"
+          checked={order.isArrived}
+          onChange={() => {
+            orders["main"][index].isArrived = !order.isArrived;
+            console.log(orders);
+            createOrder(orders["main"], "main");
+          }}
+        />
+        <div
+          onClick={() => {
+            completeOrder(index, "main");
+          }}
+        >
+          done
+        </div>
+      </div>
+    </>
   );
 }
 

@@ -12,6 +12,7 @@ import ProductsLogo from "@assets/Products.png";
 import SaleLogo from "@assets/Sale.png";
 import SettingsLogo from "@assets/Settings.png";
 import StatisticsLogo from "@assets/Statistics.png";
+import LLAMALogo from "@assets/ollama.png";
 import ProfileImg from "@assets/profile.jpg";
 import { Link } from "react-router-dom";
 
@@ -32,6 +33,14 @@ function Sidebar() {
       </div>
       <Menu />
       <div className="sidebar__account_profile">
+        <Link
+          to="http://localhost:5173/"
+          className="flex items-center justify-center border-2 px-3 py-1 rounded-lg"
+          target="blank"
+        >
+          <img src={LLAMALogo} alt="" className="sidebar__settings__logo" />
+          <div className="sidebar__settings__text">LLAMA 3.1</div>
+        </Link>
         <Link to="/settings" className="sidebar__settings">
           <img src={SettingsLogo} alt="" className="sidebar__settings__logo" />
           <div className="sidebar__settings__text">Settings</div>
@@ -83,11 +92,21 @@ function Menu() {
      */
     <CurrentPageContext.Provider value={{ currentPage, setCurrentPage }}>
       <ul className="sidebar__menu">
-        <MenuItem Logo={HomeLogo} text="Home" link="/" />
-        <MenuItem Logo={SaleLogo} text="Sale" link="/sale" />
-        <MenuItem Logo={ProductsLogo} text="Products" link="/products" />
-        <MenuItem Logo={LogsLogo} text="Logs" link="/logs" />
-        <MenuItem Logo={StatisticsLogo} text="Statistics" link="/statistics" />
+        <MenuItem Logo={HomeLogo} text="Home" link="/" target="" />
+        <MenuItem Logo={SaleLogo} text="Sale" link="/sale" target="" />
+        <MenuItem
+          Logo={ProductsLogo}
+          text="Products"
+          link="/products"
+          target=""
+        />
+        <MenuItem Logo={LogsLogo} text="Logs" link="/logs" target="" />
+        <MenuItem
+          Logo={StatisticsLogo}
+          text="Statistics"
+          link="/statistics"
+          target=""
+        />
       </ul>
     </CurrentPageContext.Provider>
   );
@@ -106,14 +125,15 @@ function Menu() {
  * @param {string} props.Logo - The URL of the logo image for the menu item.
  * @param {string} props.text - The text for the menu item.
  * @param {string} props.link - The URL of Page which will route
+ * @param {string} props.target - The URL of Page which will route
  *
  * @returns {React.JSX.Element}
  */
-function MenuItem({ Logo, text, link }) {
+function MenuItem({ Logo, text, link, target }) {
   const { currentPage, setCurrentPage } = useContext(CurrentPageContext);
 
   return (
-    <Link to={link}>
+    <Link to={link} target={target}>
       <li
         className={
           "sidebar__menu__item " +

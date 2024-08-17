@@ -222,23 +222,29 @@
   }
 }
 
-
-:where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs-left >.ant-tabs-content-holder >.ant-tabs-content>.ant-tabs-tabpane, :where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs-left >div>.ant-tabs-content-holder >.ant-tabs-content>.ant-tabs-tabpane {
-    padding-left: 0;
+:where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs-left
+  > .ant-tabs-content-holder
+  > .ant-tabs-content
+  > .ant-tabs-tabpane,
+:where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs-left
+  > div
+  > .ant-tabs-content-holder
+  > .ant-tabs-content
+  > .ant-tabs-tabpane {
+  padding-left: 0;
 }
 
 :where(.css-dev-only-do-not-override-1w4v3hc).ant-space {
-    
-    line-height: 3;
+  line-height: 3;
 }
-:where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs >.ant-tabs-nav, :where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs >div>.ant-tabs-nav{
-    border: 1px solid rgba(102, 102, 102, 0.26);
-    border-radius: 2em 0em 0em 2em;
-    height: 300px;
-    margin-top: 5em;
-    justify-content: center;
+:where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs > .ant-tabs-nav,
+:where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs > div > .ant-tabs-nav {
+  border: 1px solid rgba(102, 102, 102, 0.26);
+  border-radius: 2em 0em 0em 2em;
+  height: 400px;
+  margin-top: 5em;
+  justify-content: center;
 }
-
 
 // :where(.css-dev-only-do-not-override-1w4v3hc).ant-tabs-left
 //   > .ant-tabs-content-holder

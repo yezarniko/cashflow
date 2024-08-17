@@ -104,7 +104,7 @@
       background: #f4f4f4;
     }
     tr {
-      display: block;
+      display: flex;
       & > td:first-child,
       th:first-child {
         width: 7%;

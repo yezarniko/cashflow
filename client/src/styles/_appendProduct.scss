@@ -17,12 +17,17 @@
 
     &__title {
       display: flex;
+      font-weight: 600;
       flex-direction: row;
       line-height: 2em;
-      width: 70%;
+      width: 80%;
       justify-content: space-between;
       align-items: center;
-      margin-left: 4em;
+      margin: auto;
+
+      &__item {
+        margin-bottom: 0.5em;
+      }
 
       &-id {
         font-weight: 600;

@@ -9,13 +9,15 @@ import {
   BarElement,
   Title,
   Tooltip,
+  ArcElement,
   Legend,
 } from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
+import { Line, Bar, Doughnut } from "react-chartjs-2";
 import incomeIcon from "@assets/income.png";
 import expenseIcon from "@assets/expense.png";
 import CorrelationImg from "@assets/stat_cor-2.png";
 import { Button, Modal, Select, Skeleton } from "antd";
+import { useDatabase } from "@hooks/useDatabase";
 
 ChartJS.register(
   CategoryScale,
@@ -25,7 +27,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement
 );
 
 function getDaysInMonth(monthIndex) {
@@ -58,14 +61,21 @@ function getDaysInMonth(monthIndex) {
   return daysInMonth[monthIndex];
 }
 
+function getWeekNumber(date = new Date()) {
+  const dayOfWeek = date.getDay(); // getDay() returns 0 for Sunday, 1 for Monday, etc.
+
+  // Adjust to make Monday 1, Tuesday 2, ..., Sunday 7
+  const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+  return adjustedDay;
+}
+
 const currentMonthIndex = new Date().getMonth();
 
 const labels = {
-  Daily: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  Monthly: [...Array(getDaysInMonth(currentMonthIndex))].map(
-    (_, idx) => idx + 1
-  ),
-  Yearly: [
+  Week: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  Month: [...Array(getDaysInMonth(currentMonthIndex))].map((_, idx) => idx + 1),
+  Year: [
     "January",
     "February",
     "March",
@@ -88,93 +98,92 @@ const productCategories = [
   "Beauty & Personal Care",
   "Automotive",
   "Toys & Games",
-  "Books",
-  "Health & Wellness",
-  "Jewelry",
-  "Grocery",
-  "Furniture",
-  "Shoes",
-  "Tools & Home Improvement",
-  "Garden & Outdoor",
-  "Pet Supplies",
-  "Office Products",
-  "Baby",
-  "Musical Instruments",
-  "Luggage & Travel",
-  "Movies & TV",
-  "Watches",
-  "Video Games",
-  "Appliances",
-  "Arts, Crafts & Sewing",
-  "Industrial & Scientific",
-  "Software",
-  "Handmade",
-  "Collectibles & Fine Art",
-  "Camera & Photo",
-  "Cell Phones & Accessories",
-  "Home Improvement",
-  "Home Audio & Theater",
-  "Industrial & Scientific",
-  "Kindle Store",
-  "Magazine Subscriptions",
-  "Major Appliances",
-  "Medical Supplies & Equipment",
-  "Music",
-  "Digital Music",
-  "Music Instruments",
-  "Software",
-  "VHS",
-  "Video",
-  "PC & Video Games",
-  "Apps & Games",
-  "Gift Cards",
-  "Amazon Devices",
-  "Amazon Launchpad",
-  "Amazon Pantry",
-  "Amazon Warehouse",
-  "Appliances",
-  "Apps & Games",
-  "Arts, Crafts & Sewing",
-  "Audible Audiobooks",
-  "Automotive",
-  "Baby",
-  "Beauty & Personal Care",
-  "Books",
-  "CDs & Vinyl",
-  "Cell Phones & Accessories",
-  "Clothing, Shoes & Jewelry",
-  "Collectibles & Fine Art",
-  "Computers",
-  "Courses",
-  "Credit and Payment Cards",
-  "Digital Music",
-  "Electronics",
-  "Gift Cards",
-  "Grocery & Gourmet Food",
-  "Handmade",
-  "Health, Household & Baby Care",
-  "Home & Business Services",
-  "Home & Kitchen",
-  "Industrial & Scientific",
-  "Kindle Store",
-  "Kitchen & Dining",
-  "Luggage & Travel Gear",
-  "Luxury Beauty",
-  "Magazine Subscriptions",
-  "Movies & TV",
-  "Musical Instruments",
-  "Office Products",
-  "Patio, Lawn & Garden",
-  "Pet Supplies",
-  "Prime Pantry",
-  "Prime Video",
-  "Software",
-  "Sports & Outdoors",
-  "Tools & Home Improvement",
-  "Toys & Games",
-  "Vehicles",
-  "Video Games",
-  "Wine",
+  // "Books",
+  // "Health & Wellness",
+  // "Jewelry",
+  // "Grocery",
+  // "Furniture",
+  // "Shoes",
+  // "Tools & Home Improvement",
+  // "Garden & Outdoor",
+  // "Pet Supplies",
+  // "Office Products",
+  // "Baby",
+  // "Musical Instruments",
+  // "Luggage & Travel",
+  // "Watches",
+  // "Video Games",
+  // "Appliances",
+  // "Arts, Crafts & Sewing",
+  // "Industrial & Scientific",
+  // "Software",
+  // "Handmade",
+  // "Collectibles & Fine Art",
+  // "Camera & Photo",
+  // "Cell Phones & Accessories",
+  // "Home Improvement",
+  // "Home Audio & Theater",
+  // "Industrial & Scientific",
+  // "Kindle Store",
+  // "Magazine Subscriptions",
+  // "Major Appliances",
+  // "Medical Supplies & Equipment",
+  // "Music",
+  // "Digital Music",
+  // "Music Instruments",
+  // "Software",
+  // "VHS",
+  // "Video",
+  // "PC & Video Games",
+  // "Apps & Games",
+  // "Gift Cards",
+  // "Amazon Devices",
+  // "Amazon Launchpad",
+  // "Amazon Pantry",
+  // "Amazon Warehouse",
+  // "Appliances",
+  // "Apps & Games",
+  // "Arts, Crafts & Sewing",
+  // "Audible Audiobooks",
+  // "Automotive",
+  // "Baby",
+  // "Beauty & Personal Care",
+  // "Books",
+  // "CDs & Vinyl",
+  // "Cell Phones & Accessories",
+  // "Clothing, Shoes & Jewelry",
+  // "Collectibles & Fine Art",
+  // "Computers",
+  // "Courses",
+  // "Credit and Payment Cards",
+  // "Digital Music",
+  // "Electronics",
+  // "Gift Cards",
+  // "Grocery & Gourmet Food",
+  // "Handmade",
+  // "Health, Household & Baby Care",
+  // "Home & Business Services",
+  // "Home & Kitchen",
+  // "Industrial & Scientific",
+  // "Kindle Store",
+  // "Kitchen & Dining",
+  // "Luggage & Travel Gear",
+  // "Luxury Beauty",
+  // "Magazine Subscriptions",
+  // "Movies & TV",
+  // "Musical Instruments",
+  // "Office Products",
+  // "Patio, Lawn & Garden",
+  // "Pet Supplies",
+  // "Prime Pantry",
+  // "Prime Video",
+  // "Software",
+  // "Sports & Outdoors",
+  // "Tools & Home Improvement",
+  // "Toys & Games",
+  // "Vehicles",
+  // "Video Games",
+  // "Wine",
   // Add more categories as needed
 ];
 const products = [
@@ -324,39 +333,72 @@ function Accountant({ icon, label, amount }) {
 }
 
 function BarChart() {
-  function generateRandomArray(length, max) {
-    const randomArray = [];
-    for (let i = 0; i < length; i++) {
-      const randomNumber = Math.floor(Math.random() * max) + 1;
-      randomArray.push(randomNumber);
+  const [dataSet1, setDataSet1] = useState([]);
+  const [dataSet2, setDataSet2] = useState([]);
+  const [labels, setLabels] = useState([]);
+
+  const { productList } = useDatabase();
+  const [currentBranch, setCurrentBranch] = useState("main");
+
+  useEffect(() => {
+    if (productList) {
+      const products = Object.values(productList[currentBranch]).map((p) => {
+        if (p.saleLogs) {
+          let Logs = p.saleLogs;
+          let v = [0];
+          if (Logs.length > 0) {
+            Logs.sort((a, b) => new Date(a.date) - new Date(b.date)).reverse();
+            let counts = {};
+            Logs.forEach((log) => {
+              let date = `${new Date(log.date).toDateString()}`;
+              if (counts[date]) {
+                counts[date] += log.counts;
+              } else {
+                counts[date] = log.counts;
+              }
+            });
+            v = Object.values(counts);
+          }
+          return [p.productName, v[0], Math.max(...v)];
+        } else {
+          return [p.productName, 0, 0];
+        }
+      });
+      let a1 = [];
+      let a2 = [];
+      let labels = [];
+
+      products.forEach((p) => {
+        labels.push(p[0]);
+        a1.push(p[1]);
+        a2.push(p[2]);
+      });
+
+      setDataSet1([...a1]);
+      setDataSet2([...a2]);
+      setLabels([...labels]);
     }
-    return randomArray;
-  }
-
-  function generateTwoRandomArrays(length) {
-    const array1 = generateRandomArray(length, 100);
-    const array2 = array1.map((value) => Math.floor(Math.random() * value));
-    return [array1, array2];
-  }
-
-  const [array1, array2] = generateTwoRandomArrays(100);
+  }, [productList]);
 
   return (
-    <div style={{ minWidth: "500px" }}>
+    <div>
       <Bar
+        width={"100%"}
+        height={"450px"}
         options={{
           plugins: {
             title: {
               display: true,
-              position: "bottom",
-              text: "Product Categories",
+              position: "top",
+              text: "Peak Product Sales and Current Sales",
             },
             legend: {
               display: false,
             },
           },
           responsive: true,
-          aspectRatio: 1 / 0.7,
+          // aspectRatio: 4 / 2,
+          maintainAspectRatio: false,
           scales: {
             x: {
               grid: {
@@ -364,7 +406,7 @@ function BarChart() {
               },
               stacked: true,
               ticks: {
-                display: false,
+                display: true,
               },
             },
             y: {
@@ -376,16 +418,16 @@ function BarChart() {
           },
         }}
         data={{
-          labels: productCategories,
+          labels: labels,
           datasets: [
             {
               label: "Current Sale",
-              data: array2,
+              data: dataSet1,
               backgroundColor: "rgb(255, 146, 146)",
             },
             {
               label: "Higest Sale",
-              data: array1,
+              data: dataSet2,
               backgroundColor: "rgb(217,217,217)",
             },
           ],
@@ -606,101 +648,323 @@ function CorrelationChart({ duration }) {
   );
 }
 
-function Statistics() {
-  const [duration, setDuration] = useState("Daily");
-  const duraionMenu = ["Daily", "Monthly", "Yearly"];
+function PieChart() {
+  const { productList } = useDatabase();
+  const [currentBranch, setCurrentBranch] = useState("main");
+  const [dataSet, setDataSet] = useState({});
+  const [labels, setLabels] = useState([]);
+
+  useEffect(() => {
+    if (productList) {
+      const products = Object.values(productList[currentBranch]).map((p) => {
+        if (p.saleLogs) {
+          let Logs = p.saleLogs;
+          let v = [0];
+          if (Logs.length > 0) {
+            let counts = {};
+            Logs.forEach((log) => {
+              let date = `${new Date(log.date).toDateString()}`;
+              if (counts[date]) {
+                counts[date] += log.counts;
+              } else {
+                counts[date] = log.counts;
+              }
+            });
+            v = Object.values(counts);
+          }
+          return [p.category, Math.max(...v)];
+        } else {
+          return [p.category, 0];
+        }
+      });
+      let categories = {};
+
+      products.forEach((p) => {
+        if (categories[p[0]]) {
+          categories[p[0]] += p[1];
+        } else {
+          categories[p[0]] = p[1];
+        }
+      });
+
+      // categories = {
+      //   // Electronics: 45,
+      //   // Clothing: 50,
+      //   // "Home & Kitchen": 23,
+      //   // "Sports & Outdoors": 40,
+      //   // "Beauty & Personal Care": 22,
+      //   // Automotive: 21,
+      //   // "Toys & Games": 11,
+      //   // Books: 20,
+      //   // "Health & Wellness": 30,
+      //   // Jewelry: 38,
+      //   // Grocery: 2,
+      //   // Furniture: 14,
+      //   // Shoes: 16,
+      //   // "Tools & Home Improvement": 18,
+      //   // "Garden & Outdoor": 12,
+      //   // "Pet Supplies": 10,
+      //   // "Office Products": 2,
+      // };
+
+      if (Object.keys(categories).length > 6) {
+        const sortedCategories = Object.entries(categories).sort(
+          (a, b) => b[1] - a[1]
+        );
+
+        // console.log(sortedCategories);
+
+        let showValues = sortedCategories.slice(0, 6);
+        let others = sortedCategories.slice(6);
+        console.log(others);
+
+        setLabels(showValues.map((s) => s[0]).concat("Others in average"));
+
+        let means_of_others = parseInt(
+          others.map((o) => o[1]).reduce((a, b) => a + b, 0) / others.length
+        );
+
+        setDataSet(showValues.map((s) => s[1]).concat(means_of_others));
+      } else {
+        setLabels(Object.keys(categories));
+
+        setDataSet(Object.values(categories));
+      }
+    }
+  }, [productList]);
 
   return (
-    <div className="statistics">
-      <div className="statistics__container">
-        <div>
-          <div className="statistics__duration_menu">
-            {duraionMenu.map((d) => (
-              <div
-                key={d}
-                className={
-                  "statistics__duration_menu__item" +
-                  " " +
-                  `${
-                    duration == d
-                      ? "statistics__duration_menu__item-current"
-                      : ""
-                  }`
-                }
-                onClick={() => setDuration(d)}
-              >
-                {d}
-              </div>
-            ))}
+    <div className="">
+      <Doughnut
+        options={{
+          plugins: {
+            title: {
+              display: false,
+              position: "bottom",
+              text: "Top Product Sales by Categories",
+            },
+            legend: {
+              display: true,
+              position: "right",
+            },
+          },
+          responsive: true,
+          aspectRatio: 1 / 0.5,
+        }}
+        data={{
+          labels: labels,
+          datasets: [
+            {
+              label: "Total Sale Counts",
+              data: dataSet,
+              backgroundColor: [
+                "#519DE9",
+                "#7CC674",
+                "#73C5C5",
+                "#8481DD",
+                "#F6D173",
+                "rgb(255, 146, 146)",
+                "#D2D2D2",
+              ],
+              hoverOffset: 4,
+              offset: 5,
+            },
+          ],
+        }}
+      />
+      <div className="text-left ml-36 text-sm mt-6 text-slate-500">
+        Top Product Sales by Category
+      </div>
+    </div>
+  );
+}
+
+function SaleChart() {
+  const [duration, setDuration] = useState("Month");
+  const duraionMenu = ["Week", "Month", "Year"];
+  const [currentBranch, setCurrentBranch] = useState("main");
+  const [values, setValues] = useState([]);
+  const [TheDataSet, setTheDataSet] = useState([]);
+
+  const { sales } = useDatabase();
+
+  useEffect(() => {
+    if (sales) {
+      const data = Object.values(sales[currentBranch]).map((d) =>
+        Object.values(d)
+          .map((a) => a.totalPrice)
+          .reduce((a, b) => a + b, 0)
+      );
+      const dates = Object.values(sales[currentBranch]).map(
+        (d) =>
+          [
+            ...new Set(
+              Object.values(d).map((a) => new Date(a.date).toDateString())
+            ),
+          ][0]
+      );
+      const dataSet = {};
+      dates.forEach((key, index) => {
+        dataSet[key] = data[index];
+      });
+
+      const dataset = {};
+      const now = new Date();
+
+      // Get current month and year
+      const year = now.getFullYear();
+      const month = now.getMonth();
+
+      // Loop through all days in the month
+      for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) {
+        const date = new Date(year, month, day);
+
+        // Format the date to "Day Mon DD YYYY"
+        const formattedDate = date.toDateString();
+
+        let value;
+
+        if (dataSet[formattedDate]) {
+          value = dataSet[formattedDate];
+        } else {
+          value = 0;
+        }
+
+        // Add the formatted date and value to the dataset
+        dataset[formattedDate] = value;
+      }
+
+      let values = Object.keys(dataset)
+        .sort((a, b) => new Date(a) - new Date(b))
+        .map((date) => dataset[date]);
+      setValues(values);
+    }
+  }, [sales]);
+
+  useEffect(() => {
+    if (values) {
+      switch (duration) {
+        case "Week":
+          const index = new Date().getDate() - getWeekNumber();
+          setTheDataSet(values.slice(index, new Date().getDate()));
+          break;
+        case "Month":
+          setTheDataSet(values.slice(0, new Date().getDate()));
+          break;
+        case "Year":
+          const array = new Array(12).fill(0);
+          array[new Date().getMonth()] =
+            values.reduce((a, b) => a + b, 0) / values.length;
+          setTheDataSet(array);
+          break;
+      }
+    }
+  }, [values, duration]);
+
+  return (
+    <>
+      <div className="statistics__duration_menu my-6">
+        {duraionMenu.map((d) => (
+          <div
+            key={d}
+            className={
+              "statistics__duration_menu__item" +
+              " " +
+              `${
+                duration == d ? "statistics__duration_menu__item-current" : ""
+              }`
+            }
+            onClick={() => setDuration(d)}
+          >
+            {d}
           </div>
-          <div className="statistics__line_charts">
-            <Line
-              options={{
-                scales: {
-                  x: {
-                    grid: {
-                      display: false, // This will hide the x-axis grid lines
-                    },
-                  },
-                  y: {
-                    grid: {
-                      display: false, // This will hide the y-axis grid lines
-                    },
-                  },
-                },
-                responsive: true,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: `Total account in ${duration.toLowerCase()}`,
-                    position: "bottom",
-                  },
-                },
-              }}
-              data={{
-                labels: labels[duration],
-                datasets: [
-                  {
-                    id: 1,
-                    label: "",
-                    data: [100, 300, 200, 600, 500, 320, 700],
-                    borderColor: "rgba(190, 209, 246, .35)",
-                    backgroundColor: "rgb(190, 209, 246, 0.5)",
-                  },
-                ],
-              }}
-            />
-            <CorrelationChart duration={duration} />
+        ))}
+      </div>
+      <Line
+        options={{
+          scales: {
+            x: {
+              grid: {
+                display: false, // This will hide the x-axis grid lines
+              },
+            },
+            y: {
+              grid: {
+                display: true, // This will hide the y-axis grid lines
+              },
+            },
+          },
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            },
+            title: {
+              display: true,
+              text: `Total Sales in a ${duration.toWellFormed()}`,
+              position: "bottom",
+            },
+          },
+        }}
+        data={{
+          labels: labels[duration],
+          datasets: [
+            {
+              id: 1,
+              label: "Sale",
+              data: TheDataSet,
+              borderColor: "rgba(190, 209, 246)",
+              backgroundColor: "rgb(190, 209, 246, 0.5)",
+            },
+          ],
+        }}
+      />
+    </>
+  );
+}
+
+function Statistics() {
+  const { trainDataSet } = useDatabase();
+
+  return (
+    <div className="w-full h-full">
+      <div className="flex flex-col">
+        <div className="w-full h-[45vh]  border-b-0 flex justify-between items-center">
+          <div className="w-[45%] mt-2">
+            <SaleChart />
+          </div>
+          <div className="w-[40%] mt-2">
+            <PieChart />
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-          }}
-        >
-          <div className="statistics__accountant__container">
-            <Accountant
-              label="Total Income"
-              amount="1,300,000"
-              icon={incomeIcon}
-            />
-            <Accountant
-              label="Expense Income"
-              amount="1,300,000"
-              icon={expenseIcon}
-            />
-          </div>
-          <div className="statistics__barchart__container">
+        <div className="w-full h-[50vh] border-2 border-b-0 mt-4">
+          <div className="h-full aspect-video px-10 py-2 border-slate-200">
             <BarChart />
           </div>
         </div>
       </div>
     </div>
+    // <div className="statistics">
+    //   <div className="statistics__container">
+    //     <div>
+
+    //       <div className="statistics__line_charts">
+    //         <CorrelationChart duration={duration} />
+    //       </div>
+    //     </div>
+    //     <div
+    //       style={{
+    //         display: "flex",
+    //         flexDirection: "column",
+    //         alignItems: "flex-end",
+    //       }}
+    //     >
+    //       <div className="statistics__barchart__container">
+    //         <BarChart />
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>
   );
 }
 

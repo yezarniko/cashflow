@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-
 import { useCashList, CashListContextProvider } from "@hooks/useCashList";
 
 import {
@@ -11,6 +10,7 @@ import {
   Modal,
   Button,
   Empty,
+  Checkbox,
 } from "antd";
 const { confirm } = Modal;
 
@@ -28,12 +28,17 @@ import ScannerIcon from "@assets/scanner.gif";
 import SearchIcon from "@assets/search.gif";
 import CocaImg from "@assets/coca.png";
 import OvaltineImg from "@assets/ovaltine.jpg";
-import NotificationSound from "@assets/store-scanner-beep-90395.mp3";
+import NotificationSound from "@assets/notification.mp3";
 import EmptyCartIcon from "@assets/bag.png";
 import CheckIcon from "@assets/check-gif.gif";
+import ProductThumbnailImage from "@assets/Sale.png";
 
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { gql, useFragment, useMutation, useQuery } from "@apollo/client";
 import { useUser } from "@hooks/useUser";
+import { useDatabase } from "@hooks/useDatabase";
+import { SearchBox } from "./Products";
+
+import { ReactBarcode } from "react-jsbarcode";
 
 const PRODUCTS = [
   {
@@ -125,25 +130,74 @@ function Sale() {
   const { cashList, setCashList } = useCashList();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const { data, loading, error, refetch } = useQuery(GET_PRODUCTS, {
-    variables: {
-      userId: currentUser.uid,
-      token: currentUser.accessToken,
-      branchId: "97642144875",
-      branchToken: "20746829937",
-    },
+  // const { data, loading, error, refetch } = useQuery(GET_PRODUCTS, {
+  //   variables: {
+  //     userId: currentUser.uid,
+  //     token: currentUser.accessToken,
+  //     branchId: "97642144875",
+  //     branchToken: "20746829937",
+  //   },
+  // });
+
+  const [data, setData] = useState({
+    products: [
+      {
+        productName: "Apple",
+        count: 1,
+        salePrice: 1500,
+        img: "",
+        category: "Fruits",
+        productId: 202308040125,
+      },
+    ],
   });
+  // const [loading, setLoading] = useState(false);
+
+  const [products, setProducts] = useState([]);
+  const { productList, loading, deleteProduct } = useDatabase();
+  const [currentBranch, setCurrentBranch] = useState("main");
+  const productsRef = useRef(null);
 
   useEffect(() => {
-    if (data) {
-      console.log("refetch");
-      refetch();
+    if (productList) {
+      if (productList[currentBranch]) {
+        let Products = Object.values(productList[currentBranch]);
+        Products.sort(
+          (a, b) =>
+            new Date(a.recentModifiedDate) - new Date(b.recentModifiedDate)
+        ).reverse();
+        productsRef.current = Products;
+        setProducts(Products);
+      }
     }
-  }, []);
+  }, [productList]);
+
+  function addItemToCashList(product) {
+    const data = {
+      name: product.productName,
+      price: product.salePrice,
+      count: 1,
+    };
+    const existingProductIndex = cashList.findIndex(
+      (p) => p.name === product.productName
+    );
+    console.log(cashList);
+    console.log(existingProductIndex);
+
+    if (existingProductIndex === -1) {
+      console.log("RUN THIS");
+      setCashList((cashList) => [...cashList, data]);
+    } else {
+      setCashList((cashList) =>
+        cashList.map((p) =>
+          p.name === product.productName ? { ...p, count: p.count + 1 } : p
+        )
+      );
+    }
+  }
 
   useEffect(() => {
     if (mode === "BarcodeScan") {
-      let barcode = "";
       messageApi.open({
         type: "loading",
         content: (
@@ -178,44 +232,6 @@ function Sale() {
         duration: 0,
         icon: <></>,
       });
-      document.onkeyup = (e) => {
-        if (e.key === "Enter") {
-          const product = data.products.find(
-            (product) => product.productId == barcode
-          );
-          console.log(product);
-
-          if (product) {
-            const data = {
-              name: product.productName,
-              price: product.salePrice,
-              count: 1,
-            };
-            const existingProductIndex = cashList.findIndex(
-              (p) => p.name === product.productName
-            );
-
-            if (existingProductIndex === -1) {
-              setCashList((cashList) => [...cashList, data]);
-            } else {
-              setCashList((cashList) =>
-                cashList.map((p) =>
-                  p.name === product.productName
-                    ? { ...p, count: p.count + 1 }
-                    : p
-                )
-              );
-            }
-          }
-
-          messageApi.open({ type: "success", content: barcode, duration: 0.5 });
-          barcode = "";
-        } else {
-          if (!isNaN(e.key)) {
-            barcode += e.key;
-          }
-        }
-      };
     } else {
       document.onkeyup = null;
       messageApi.destroy();
@@ -224,7 +240,40 @@ function Sale() {
       document.onkeyup = null;
       messageApi.destroy();
     };
-  }, [mode]); //
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode === "BarcodeScan") {
+      let barcode = "";
+
+      document.onkeyup = (e) => {
+        if (e.key === "Enter") {
+          console.log(products);
+          const product = products.find((product) => {
+            console.log(product.productId);
+            return product.productId == barcode;
+          });
+          console.log(barcode);
+          console.log(product);
+
+          if (product) {
+            addItemToCashList(product);
+            messageApi.open({
+              type: "success",
+              content: barcode,
+              duration: 0.5,
+            });
+          }
+
+          barcode = "";
+        } else {
+          if (!isNaN(e.key)) {
+            barcode += e.key;
+          }
+        }
+      };
+    }
+  }, [mode, cashList]);
 
   if (loading) {
     return <div>Lodaing...</div>;
@@ -235,20 +284,30 @@ function Sale() {
       {contextHolder}
       <div className="sale__container">
         <div className="sale__products">
-          <div className="sale__products__headbox">
-            <Search />
+          <div className="sale__products__headbox mt-5">
+            <SearchBox {...{ setProducts }} className="searchbox" />
             <ModeSelector mode={mode} setMode={setMode} />
           </div>
           <div className="sale__products__items">
-            {data.products.map((product) => (
-              <SaleProductItem
-                key={product.productName}
-                name={product.productName}
-                category={product.category}
-                price={product.salePrice}
-                img={product.productImg}
-              />
-            ))}
+            {products.map(
+              (product) =>
+                product.counts > 0 && (
+                  <SaleProductItem
+                    key={product.productName}
+                    id={product.productId}
+                    name={product.productName}
+                    category={product.category}
+                    price={product.salePrice}
+                    buyingPrice={product.buyingPrice}
+                    counts={product.counts}
+                    img={
+                      product.productImg !== ""
+                        ? product.productImg
+                        : ProductThumbnailImage
+                    }
+                  />
+                )
+            )}
           </div>
         </div>
         <CashList />
@@ -258,10 +317,24 @@ function Sale() {
   );
 }
 
-function SaleProductItem({ name, category, price, img }) {
+function SaleProductItem({
+  id,
+  name,
+  counts,
+  category,
+  price,
+  buyingPrice,
+  img,
+}) {
   const { cashList, setCashList } = useCashList();
   function handleAddedProduct() {
-    const data = { name: name, price: price, count: 1 };
+    const data = {
+      id: id,
+      name: name,
+      price: price,
+      count: 1,
+      buyingPrice: buyingPrice,
+    };
 
     const existingProductIndex = cashList.findIndex((p) => p.name === name);
 
@@ -270,7 +343,9 @@ function SaleProductItem({ name, category, price, img }) {
     } else {
       setCashList((cashList) =>
         cashList.map((p) =>
-          p.name === name ? { ...p, count: p.count + 1 } : p
+          p.name === name
+            ? { ...p, count: p.count + 1 < counts ? p.count + 1 : p.count }
+            : p
         )
       );
     }
@@ -278,7 +353,7 @@ function SaleProductItem({ name, category, price, img }) {
 
   return (
     <div className="sale__products__item">
-      <div className="sale__products__item__img">
+      <div className="sale__products__item__img p-3">
         <img src={img} />
       </div>
       <div>
@@ -292,6 +367,21 @@ function SaleProductItem({ name, category, price, img }) {
           </div>
         </div>
       </div>
+      {/* <ReactBarcode
+        className="mr-4"
+        value={id}
+        options={{
+          format: `${id}`.length === 13 ? "EAN13" : "UPC",
+          height: "50",
+          fontSize: 11,
+          margin: 0,
+          // displayValue: false,
+          width: 2,
+          textAlign: "center",
+          textMargin: 1,
+          lineColor: "#827070",
+        }}
+      /> */}
       <div className="sale__products__item__plus" onClick={handleAddedProduct}>
         <PlusOutlined
           style={{
@@ -325,7 +415,10 @@ function CashList() {
       <div className="sale__cashlist__header">
         <div>Product</div>
         <div>Qty</div>
-        <div>Price</div>
+        <div className="">
+          <div className="w-1/2 text-right">Price</div>
+          <div className="w-1/2"></div>
+        </div>
       </div>
       <div className="sale__cashlist__products">
         {cashList.length != 0 ? (
@@ -352,8 +445,18 @@ function CashList() {
 
 function CashListProductItem({ index, deleteProduct, updateQty }) {
   const { cashList } = useCashList();
+  const [productName, setProductName] = useState(cashList[index].name);
   const [isExpand, setIsExpand] = useState(false);
   const qtyInputRef = useRef(null);
+
+  useEffect(() => {
+    let name = productName;
+
+    if (name.length > 12) {
+      name = name.slice(0, 12) + "...";
+      setProductName(name);
+    }
+  }, []);
 
   function handleOnSaveChanges() {
     updateQty(parseInt(qtyInputRef.current.value));
@@ -363,11 +466,11 @@ function CashListProductItem({ index, deleteProduct, updateQty }) {
   return (
     <div className="sale__cashlist__product__collapse">
       <div className="sale__cashlist__product">
-        <div>{cashList[index].name}</div>
+        <div>{productName}</div>
         <div>{cashList[index].count}</div>
         <div>
-          {cashList[index].price} ks
-          <div>
+          <div className="w-[55%] text-right">{cashList[index].price} ks</div>
+          <div className="w-[40%] text-right">
             {isExpand ? (
               <DownSquareOutlined
                 className="sale__cashlist__product__expand-icon"
@@ -414,7 +517,11 @@ function CashListProductItem({ index, deleteProduct, updateQty }) {
 function Payment({ currentUser }) {
   const { cashList, setCashList } = useCashList();
   const [totalPrice, setTotalPrice] = useState(0);
+  const [profits, setProfits] = useState(0);
   const [messageApi, contextHolder] = message.useMessage();
+  const [receipt, setReceipt] = useState(totalPrice);
+  const isPrintRef = useRef(null);
+  const bouncherRef = useRef(null);
 
   const SALE_PRODUCT = gql`
     mutation SaleProduct(
@@ -458,9 +565,25 @@ function Payment({ currentUser }) {
     }
   `;
 
-  const [SaleProduct, { loading }] = useMutation(SALE_PRODUCT);
+  // const [SaleProduct, { loading }] = useMutation(SALE_PRODUCT);
+  // const [AddSaleLog, { loading: l }] = useMutation(ADD_SALE_LOG);
 
-  const [AddSaleLog, { loading: l }] = useMutation(ADD_SALE_LOG);
+  const { saleProduct } = useDatabase();
+
+  function printMe(element) {
+    var printContent = element.innerHTML;
+    var originalContentHead = window.document.head.innerHTML;
+    // var originalContent = window.document.body.innerHTML;
+    // window.document.body.innerHTML = printContent;
+    // window.print();
+    // window.document.body.innerHTML = originalContent;
+    var a = window.open("Print", "", "height=500, width=600");
+    a.document.write(originalContentHead);
+    a.document.write(printContent);
+    a.document.close();
+    a.print();
+    a.close();
+  }
 
   function handleOnCash() {
     if (cashList.length == 0) {
@@ -471,56 +594,118 @@ function Payment({ currentUser }) {
       });
     } else {
       confirm({
-        title: "Confirm Cash",
+        title: "",
         icon: null,
         okText: "Confirm",
         content: (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ height: "30%", margin: "2em 0" }}>
-              <img src={CheckIcon} />
-            </div>
+          <div className="ml-4 my-4 flex flex-col items-center w-full m-auto justify-center">
+            <img src={CheckIcon} className="w-1/5 aspect-square" />
             <p
               style={{
                 color: "var(--secondary-color)",
                 fontWeight: "600",
                 fontSize: "1.2em",
+                marginTop: "1em",
               }}
             >
-              Amount: {totalPrice} ks
+              Confirm Cash
             </p>
+
+            <div ref={bouncherRef}>
+              <div className="hidden mx-auto print:flex flex-col items-center bg-slate-100 text-sm font-mono min-h-full justify-between">
+                <div className="w-full p-3">
+                  {cashList.map((cash) => (
+                    <p className="mb-2 flex justify-between w-full">
+                      <span>
+                        {cash.name.length > 15
+                          ? cash.name.slice(0, 15) + "..."
+                          : cash.name}
+                      </span>
+                      <span>{cash.price} ks</span>
+                    </p>
+                  ))}
+                  {/* {cashList.map((cash) => (
+                  <p className="mb-2 flex justify-between w-full">
+                    <span>
+                      {cash.name.length > 15
+                        ? cash.name.slice(0, 15) + "..."
+                        : cash.name}
+                    </span>
+                    <span>{cash.price} ks</span>
+                  </p>
+                ))} */}
+                </div>
+                <div className="w-full p-3">
+                  <div className="border-2 border-slate-200 w-full my-3"></div>
+                  <p className="mb-2 flex justify-between w-full">
+                    <span>Receipt:</span> <span>{receipt} ks</span>
+                  </p>
+                  <p className="mb-2 flex justify-between w-full">
+                    <span>Exchange:</span>{" "}
+                    <span>{receipt - totalPrice} ks</span>
+                  </p>
+                  <p className="mb-2 flex justify-between w-full">
+                    <span>Total Price:</span> <span>{totalPrice} ks</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="my-4 py-3 flex flex-col items-center bg-slate-100 text-sm font-mono w-full">
+              <div className="overflow-y-scroll h-60 w-full p-3">
+                {cashList.map((cash) => (
+                  <p className="mb-2 flex justify-between w-full">
+                    <span>
+                      {cash.name.length > 15
+                        ? cash.name.slice(0, 15) + "..."
+                        : cash.name}
+                    </span>
+                    <span>{cash.price} ks</span>
+                  </p>
+                ))}
+              </div>
+              <div className="border-2 border-slate-200 w-full my-3"></div>
+              <p className="mb-2 flex justify-between w-full">
+                <span>Receipt:</span> <span>{receipt} ks</span>
+              </p>
+              <p className="mb-2 flex justify-between w-full">
+                <span>Exchange:</span> <span>{receipt - totalPrice} ks</span>
+              </p>
+              <p className="mb-2 flex justify-between w-full">
+                <span>Total Price:</span> <span>{totalPrice} ks</span>
+              </p>
+            </div>
+            <div className="font-sans flex items-center w-full text-sm cursor-pointer">
+              <input ref={isPrintRef} type="checkbox" className="mr-2" />
+              <span
+                onClick={() => {
+                  isPrintRef.current.click();
+                  console.log(isPrintRef.current.checked);
+                }}
+              >
+                Print Receipt Bouncher
+              </span>
+            </div>
           </div>
         ),
         onOk() {
-          console.log(cashList);
-          SaleProduct({
-            variables: {
-              userId: currentUser.uid,
-              accountToken: currentUser.accessToken,
-              cashList: cashList,
-            },
-          }).then(() => {
-            AddSaleLog({
-              variables: {
-                userId: currentUser.uid,
-                accountToken: currentUser.accessToken,
-                saleLog: { customer_id: Math.floor(Math.random() * 10000), amount: totalPrice, isOrder: false },
-                products: cashList,
-              },
-            });
-            console.log(cashList);
-            setCashList([]);
-            messageApi.open({
-              type: "success",
-              content: "Cash Accepted",
-              duration: 1,
-            });
+          let date = new Date();
+          let Data = {
+            date: date.toISOString(),
+            totalPrice: totalPrice,
+            profits: profits,
+            products: cashList,
+          };
+          saleProduct(Data, "main");
+          setCashList([]);
+          const audio = new Audio(NotificationSound);
+          audio.play();
+          messageApi.open({
+            type: "success",
+            content: "Cash Accepted",
+            duration: 1,
           });
+          if (isPrintRef.current.checked) printMe(bouncherRef.current);
         },
       });
     }
@@ -528,20 +713,48 @@ function Payment({ currentUser }) {
 
   useEffect(() => {
     let prices = cashList.map((p) => p.price * p.count);
+    let profits = cashList.map((p) => (p.price - p.buyingPrice) * p.count);
     setTotalPrice(prices.reduce((total, num) => total + num, 0));
+    setProfits(profits.reduce((total, num) => total + num, 0));
   }, [cashList]);
+
+  useEffect(() => {
+    setReceipt(totalPrice);
+  }, [totalPrice]);
 
   return (
     <div className="sale__payment">
       {contextHolder}
-      <div className="sale__payment__total">
-        <p>Total</p>
-        <p>
-          {totalPrice}
-          ks
-        </p>
+      <div className="flex flex-col h-[75%]">
+        <div className="sale__payment__total mt-2">
+          <p>Receipt</p>
+          <p>
+            <input
+              type="number"
+              value={receipt}
+              onChange={(e) => setReceipt(e.target.value)}
+              className="w-24 text-right outline-none border-2 mr-2 p-1 border-emerald-300/50"
+            />
+            ks
+          </p>
+        </div>
+        <div className="sale__payment__total">
+          <p>Exchange</p>
+          <p>
+            {/* <input
+              type="number"
+              value={receipt - totalPrice}
+              className="w-20 text-right outline-none border-2 mr-2 tex-sm"
+            /> */}
+            {receipt - totalPrice} ks
+          </p>
+        </div>
+        <div className="sale__payment__total text-lg">
+          <p className="text-slate-600">Total</p>
+          <p className="text-emerald-500">{totalPrice} ks</p>
+        </div>
       </div>
-      <div className="sale__payment__pay" onClick={handleOnCash}>
+      <div className="sale__payment__pay grow" onClick={handleOnCash}>
         <p>Cash</p>
       </div>
     </div>
@@ -602,28 +815,28 @@ function ModeSelector({ mode, setMode }) {
       options={[
         {
           label: (
-            <>
-              <ShoppingCartOutlined />
-              {"  "}Manual
-            </>
+            <div className="flex items-center justify-center">
+              <ShoppingCartOutlined className="mr-1" />
+              Manual
+            </div>
           ),
           value: "Product",
         },
         {
           label: (
-            <>
-              <BarcodeOutlined />
-              {"  "}Barcode Scan
-            </>
+            <div className="flex items-center justify-center">
+              <BarcodeOutlined className="mr-1" />
+              Barcode Scan
+            </div>
           ),
           value: "BarcodeScan",
         },
         {
           label: (
-            <>
-              <ScanOutlined />
-              {"  "}Webcam Scan
-            </>
+            <div className="flex items-center justify-center">
+              <ScanOutlined className="mr-1" />
+              Webcam Scan
+            </div>
           ),
           value: "WebcamScan",
         },

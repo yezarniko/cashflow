@@ -1,0 +1,39 @@
+{
+  "users": {
+    "H9gzTUw7f5NxOTOE5SzdLkyi4HH2": {
+      "productListId": "19280880"
+    }
+  },
+  "products": {
+    "19280880": {
+      "main": [
+        {
+          "productId": 1233190909,
+          "productName": "Apple",
+          "productImg": "https://wiki.archlinux.org//favicon.ico",
+          "category": "Fruits",
+          "brand": "Sungsaung",
+          "buyingPrice": 240,
+          "salePrice": 300,
+          "domainCounts": 20,
+          "counts": 200,
+          "recentModifiedDate": "12/12/22",
+          "productLogs": []
+        },
+        {
+          "productId": 1233190903,
+          "productName": "Orange",
+          "productImg": "https://wiki.archlinux.org//favicon.ico",
+          "category": "Fruits",
+          "brand": "Sungsaung",
+          "buyingPrice": 240,
+          "salePrice": 300,
+          "domainCounts": 20,
+          "counts": 200,
+          "recentModifiedDate": "12/12/22",
+          "productLogs": []
+        }
+      ]
+    }
+  }
+}

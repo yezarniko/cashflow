@@ -1,14 +1,14 @@
 .sale {
-  width: 98%;
+  width: 90%;
   height: 90%;
-  margin: 0 auto;
+  // margin: 0 auto;
   margin-top: 2em;
   &__container {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr 0.2fr;
+    grid-template-columns: 2fr 0.9fr;
+    grid-template-rows: 1fr 0.3fr;
 
     column-gap: 30px;
     // row-gap: 20px;
@@ -140,6 +140,7 @@
 
     &__products {
       height: 90%;
+      overflow-y: scroll;
       &__empty_cart {
         width: 100%;
         height: 100%;
@@ -153,7 +154,7 @@
         font-weight: 600;
 
         &__img {
-          width: 30%;
+          width: 20%;
           img {
             width: 100%;
           }
@@ -228,13 +229,14 @@
     &__total {
       display: flex;
       justify-content: space-between;
-      height: 50%;
-      padding: 1em;
+      padding-inline: 1em;
+      // padding-block: 0.8em;
+      margin-bottom: 1em;
       font-weight: 600;
       color: var(--secondary-color);
     }
     &__pay {
-      height: 50%;
+      min-height: 25%;
       background: rgb(26, 188, 156);
       // font-size: 1.1em;
       color: white;
@@ -252,13 +254,24 @@
   height: 30px;
   display: flex;
   flex-direction: row;
+  &::before {
+    content: "";
+    background-color: rgba(26, 188, 156, 0.9);
+    display: inline-block;
+    padding: 1.2em;
+    border: 1px solid #1abc9c;
+    box-shadow: 0px 0px 10px 0px rgba(36, 35, 35, 0.25);
+  }
+  img {
+    display: none;
+  }
   input {
     height: 100%;
-    font-weight: 700;
     color: var(--secondary-color);
-    border: none;
+    font-weight: 500;
     box-shadow: 0px 0px 10px 0px rgba(36, 35, 35, 0.15);
-    padding: 1em;
+    padding: 1.2em;
+    border: 1px solid rgba(26, 188, 156, 0.8);
 
     &:focus {
       outline: none;

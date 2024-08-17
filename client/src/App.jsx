@@ -36,6 +36,7 @@ import { FirebaseStorageProvider } from "@hooks/useFirebaseStorage";
 import AccountVerification from "@pages/auth/AccountVerification";
 import ForgotPassword from "@pages/auth/ForgotPassword";
 import { CashListContextProvider } from "@hooks/useCashList";
+import { FirebaseDatabaseProvider } from "@hooks/useDatabase";
 
 import {
   ApolloProvider,
@@ -124,13 +125,15 @@ function App() {
   return (
     <ApolloProvider client={client}>
       <UserProvider>
-        <FirebaseStorageProvider>
-          <CashListContextProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </CashListContextProvider>
-        </FirebaseStorageProvider>
+        <FirebaseDatabaseProvider>
+          <FirebaseStorageProvider>
+            <CashListContextProvider>
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </CashListContextProvider>
+          </FirebaseStorageProvider>
+        </FirebaseDatabaseProvider>
       </UserProvider>
     </ApolloProvider>
   );
@@ -139,21 +142,21 @@ function App() {
 function AppRoutes() {
   const { currentUser } = useUser();
   const [isAuthenticate, setIsAuthenticate] = useState(false);
-  const [addUserToDB, { data, loading, error }] = useMutation(ADD_USER_TO_DB);
+  // const [addUserToDB, { data, loading, error }] = useMutation(ADD_USER_TO_DB);
 
   useEffect(() => {
     if (currentUser) {
       setIsAuthenticate(currentUser.emailVerified);
 
       console.log(currentUser);
-      if (!loading) {
-        addUserToDB({
-          variables: {
-            userId: currentUser.uid,
-            accountToken: currentUser.accessToken,
-          },
-        });
-      }
+      // if (!loading) {
+      //   addUserToDB({
+      //     variables: {
+      //       userId: currentUser.uid,
+      //       accountToken: currentUser.accessToken,
+      //     },
+      //   });
+      // }
     } else {
       setIsAuthenticate(false);
     }

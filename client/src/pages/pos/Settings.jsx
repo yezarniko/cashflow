@@ -8,6 +8,7 @@ import {
   MailOutlined,
   KeyOutlined,
   LockOutlined,
+  CloudServerOutlined,
 } from "@ant-design/icons";
 import BranchImage from "@assets/branch _image.png";
 import PlugIcon from "@assets/plug_icon.png";
@@ -37,6 +38,9 @@ import { useUser } from "@hooks/useUser";
 import { Navigate } from "react-router-dom";
 import validator from "validator";
 import { gql, useQuery } from "@apollo/client";
+import { Ollama } from "ollama/browser";
+import { useDatabase } from "@/hooks/useDatabase";
+import { useRef } from "react";
 
 const layout = {
   labelCol: {
@@ -275,7 +279,7 @@ const Settings = () => {
         defaultActiveKey="1"
         tabPosition={"left"}
         style={{
-          height: 200,
+          height: 500,
           fontWeight: 600,
         }}
         items={[
@@ -311,7 +315,25 @@ const Settings = () => {
                   width: "55%",
                 }}
               >
-                <BranchesSettings currentUser={currentUser} />
+                {/* <BranchesSettings currentUser={currentUser} /> */}
+              </div>
+            ),
+          },
+          {
+            label: (
+              <span>
+                <CloudServerOutlined />
+                LLM
+              </span>
+            ),
+            key: 3,
+            children: (
+              <div
+                style={{
+                  width: "55%",
+                }}
+              >
+                <TrainingSection />
               </div>
             ),
           },
@@ -325,10 +347,131 @@ const Settings = () => {
                 Sign Out
               </Button>
             ),
-            key: 3,
+            key: 4,
           },
         ]}
       />
+    </div>
+  );
+};
+
+const TrainingSection = () => {
+  const [modelDetails, setModelDetails] = useState(null);
+  const [modifiedDate, setModifiedDate] = useState("");
+  const [ollama, setOllama] = useState(null);
+  const { trainDataSet } = useDatabase();
+  const [consoleOutput, setConsoleOutput] = useState("");
+  const [baseURL, setBaseURL] = useState("http://192.168.16.147:11434");
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const teX = useRef(null);
+
+  async function testRequest() {
+    const response = await ollama.show({ model: "llama3.1-cashflow" });
+    setModifiedDate(response.modified_at);
+    setConsoleOutput((output) => output + "\n\n\nSuccessfully feeded data!");
+    teX.current.scrollTop = teX.current.scrollHeight;
+  }
+
+  useEffect(() => {
+    const modelName = "llama3.1-cashflow";
+
+    const ollama = new Ollama({ host: baseURL });
+
+    ollama
+      .show({
+        model: modelName,
+      })
+      .then((data) => {
+        setModelDetails(data.details);
+        setModifiedDate(data.modified_at);
+      })
+      .catch((error) => {
+        console.log(error);
+        setModelDetails(null);
+      });
+
+    setOllama(ollama);
+  }, [baseURL]);
+
+  return (
+    <div className="h-[90vh] w-full border-2">
+      {contextHolder}
+      <h2 className="mt-6 ml-6 text-base">LLM Training Section</h2>
+      <div className="ml-6 mt-6">
+        <span className="mr-5">Ollama Server:</span>
+        <input
+          type="url"
+          className="w-72 border-2 outline-none font-mono text-slate-500 p-2"
+          spellCheck={false}
+          defaultValue={baseURL}
+          onKeyUp={(event) => {
+            if (event.key === "Enter") {
+              console.log(event.key);
+              console.log(event.target.value);
+              setBaseURL(event.target.value);
+            }
+          }}
+        />
+        <span
+          className={
+            (modelDetails ? "bg-emerald-500 " : "bg-amber-500 ") +
+            "ml-4  scale-[80%] inline-block font-mono text-sm text-slate-100 p-2 rounded-xl"
+          }
+        >
+          {modelDetails ? "Connected" : "Disconnect"}
+        </span>
+      </div>
+      {modelDetails && (
+        <>
+          <div className="flex mx-auto  items-center ml-6 mt-6 font-sans text-base font-normal">
+            <div className="mr-6 text-slate-500">
+              <div>Model: </div>
+              <div>Parameter Size: </div>
+              <div>Family: </div>
+              <div>Format: </div>
+              <div>Quantization Level: </div>
+              <div>Last Trained Date: </div>
+            </div>
+            <div className="text-slate-700/80">
+              <div className="text-blue-500">{modelDetails.parent_model}</div>
+              <div className="text-orange-500">
+                {modelDetails.parameter_size}
+              </div>
+              <div>{modelDetails.family.toUpperCase()}</div>
+              <div>{modelDetails.format.toUpperCase()}</div>
+              <div>{modelDetails.quantization_level}</div>
+              <div className="font-mono">
+                {new Date(modifiedDate).toLocaleString()}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div
+              onClick={() =>
+                trainDataSet(
+                  "main",
+                  ollama,
+                  messageApi,
+                  testRequest,
+                  setConsoleOutput
+                )
+              }
+              className="cursor-pointer p-2 bg-emerald-500/80 rounded text-slate-50 font-sans inline-block ml-6 mt-6"
+            >
+              Train Model
+            </div>
+          </div>
+          <div className="flex items-center">
+            <textarea
+              ref={teX}
+              value={consoleOutput}
+              readOnly={true}
+              className="w-[95%] font-normal mx-auto h-[420px] p-6 font-mono text-xs bg-slate-200 text-slate-600 mt-6"
+            ></textarea>
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -12,12 +12,16 @@ import {
 } from "antd";
 import WarnigIcon from "@assets/warning.png";
 import Successful from "@assets/successful.png";
+import CategoriesIcon from "@assets/categories.png";
+import BrandsIcon from "@assets/brands.png";
 import { Link } from "react-router-dom";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { useUser } from "@hooks/useUser";
 import { useFireBaseStorage } from "@hooks/useFirebaseStorage";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import ScannerIcon from "@assets/scanner.gif";
+import { useDatabase } from "@hooks/useDatabase";
+import { CategoriesModal, BrandsModal } from "./Products";
 
 /**
  * The `NewProductForm` function is a React functional component that renders a form for adding a new product. It uses the
@@ -53,6 +57,7 @@ function NewProductForm() {
 
   const { currentUser } = useUser();
   const { storage } = useFireBaseStorage();
+  const { loading, createNewProduct } = useDatabase();
 
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -111,61 +116,79 @@ function NewProductForm() {
     }
   `;
 
-  const { data, loading, error } = useQuery(Get_DATA, {
-    variables: {
-      userId: currentUser.uid,
-      token: currentUser.accessToken,
+  const { categories, brands } = useDatabase();
+
+  const [data, setData] = useState({
+    user: {
+      branches: [
+        {
+          branchId: 1,
+          name: "main",
+        },
+      ],
     },
   });
 
-  const [AddProduct, { data: sdata, loading: sloading, error: serror }] =
-    useMutation(ADD_PRODUCT);
+  const [isCategoriesModalOpen, setIsCategoreisModalOpen] = useState(false);
+  const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
 
-  if (loading || !data) {
-    return <div>Loading...</div>;
-  }
+  // const { data, loading, error } = useQuery(Get_DATA, {
+  //   variables: {
+  //     userId: currentUser.uid,
+  //     token: currentUser.accessToken,
+  //   },
+  // });
 
-  if (sloading) {
-    return <div>Loading...</div>;
-  }
+  // const [AddProduct, { data: sdata, loading: sloading, error: serror }] =
+  //   useMutation(ADD_PRODUCT);
+
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
+
+  // if (sloading) {
+  //   return <div>Loading...</div>;
+  // }
 
   function handleOnCloseModal() {
     form.resetFields();
     setIsShowModal(false);
+    setImagePreview("");
+    setFile(null);
   }
 
   function handleOnSubmit(values) {
+    function submitData(img) {
+      const date = new Date();
+      const Data = {
+        ...values,
+        productImg: img,
+        counts: values.domainCounts,
+        recentModifiedDate: `${date.toDateString()} ${date.toLocaleTimeString()}`,
+        purchaseLogs: [
+          {
+            counts: values.domainCounts,
+            date: `${date.toDateString()} ${date.toLocaleTimeString()}`,
+            purchasePrice: values.buyingPrice,
+            salePrice: values.salePrice,
+          },
+        ],
+      };
+      console.log(Data);
+      createNewProduct(Data, "main");
+      try {
+        setIsShowModal(true);
+      } catch (error) {
+        console.log(error);
+      }
+      setDisableSubmitButton(false);
+    }
+
     setDisableSubmitButton(true);
 
     if (!file) {
-      const Data = { ...values, productImg: "" };
-      console.log(Data);
-      if (!sloading) {
-        try {
-          AddProduct({
-            variables: {
-              userId: currentUser.uid,
-              accountToken: currentUser.accessToken,
-              branchId: Data.branch,
-              branchToken: "20746829937",
-
-              productName: Data.productName,
-              productId: Data.productId,
-              productImg: Data.productImg,
-              category: Data.category,
-              brand: Data.brand,
-              buyingPrice: Data.buyingPrice,
-              salePrice: Data.salePrice,
-              domainCounts: Data.domainCounts,
-            },
-          });
-          setIsShowModal(true);
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      setDisableSubmitButton(false);
-      return ;
+      submitData("");
+      return;
     }
 
     const storageRef = ref(storage, `images/${file.name}`);
@@ -173,33 +196,7 @@ function NewProductForm() {
     uploadBytes(storageRef, file).then((snapshot) => {
       console.log("Uploaded Image!");
       getDownloadURL(storageRef).then((url) => {
-        const Data = { ...values, productImg: url };
-        console.log(Data);
-        if (!sloading) {
-          try {
-            AddProduct({
-              variables: {
-                userId: currentUser.uid,
-                accountToken: currentUser.accessToken,
-                branchId: Data.branch,
-                branchToken: "20746829937",
-
-                productName: Data.productName,
-                productId: Data.productId,
-                productImg: Data.productImg,
-                category: Data.category,
-                brand: Data.brand,
-                buyingPrice: Data.buyingPrice,
-                salePrice: Data.salePrice,
-                domainCounts: Data.domainCounts,
-              },
-            });
-            setIsShowModal(true);
-          } catch (error) {
-            console.log(error);
-          }
-        }
-        setDisableSubmitButton(false);
+        submitData(url);
       });
     });
   }
@@ -207,6 +204,14 @@ function NewProductForm() {
   return (
     <>
       {contextHolder}
+      <CategoriesModal
+        isModalOpen={isCategoriesModalOpen}
+        setModalOpen={setIsCategoreisModalOpen}
+      />
+      <BrandsModal
+        isModalOpen={isBrandModalOpen}
+        setModalOpen={setIsBrandModalOpen}
+      />
       <div className="add_new_product__main_card">
         <h3>Add New Product</h3>
         <div className="add_new_product__main_card__label">
@@ -293,8 +298,14 @@ function NewProductForm() {
                     document.onkeyup = (e) => {
                       if (e.key === "Enter") {
                         console.log(barcode);
-                        form.setFieldValue("productId", barcode);
-                        setScanMode(false);
+                        console.log(barcode.length);
+                        if (barcode.length === 13 || barcode.length == 12) {
+                          form.setFieldValue("productId", barcode);
+                          setScanMode(false);
+                        } else {
+                          barcode = "";
+                          setScanMode(false);
+                        }
                       } else {
                         barcode += e.key;
                       }
@@ -342,13 +353,20 @@ function NewProductForm() {
               ]}
             >
               <Select style={{ width: "60%" }}>
-                {data.categories.map((category) => (
-                  <Select.Option value={category.name}>
-                    {category.name}
+                {categories?.map((category) => (
+                  <Select.Option value={category} key={category}>
+                    {category}
                   </Select.Option>
                 ))}
+                <div
+                  onMouseEnter={() => setIsCategoreisModalOpen(true)}
+                  className="block mt-6 text-center mx-0 bg-indigo-400/10 rounded-lg text-slate-500/90 font-sans font-semibold text-sm cursor-pointer scale-90"
+                >
+                  Create Category
+                </div>
               </Select>
             </Form.Item>
+
             <Form.Item
               name="brand"
               label="Brand"
@@ -360,13 +378,20 @@ function NewProductForm() {
               ]}
             >
               <Select style={{ width: "60%" }}>
-                {data.brands.map((brand) => (
-                  <Select.Option value={brand.name} key={brand.name}>
-                    {brand.name}
+                {brands?.map((brand) => (
+                  <Select.Option value={brand} key={brand}>
+                    {brand}
                   </Select.Option>
                 ))}
+                <Button
+                  onMouseEnter={() => setIsBrandModalOpen(true)}
+                  className="block mt-6 text-center mx-0 bg-indigo-400/10 rounded-lg text-slate-500/90 font-sans font-semibold text-sm cursor-pointer scale-90"
+                >
+                  Create Brand
+                </Button>
               </Select>
             </Form.Item>
+
             <Form.Item
               name="buyingPrice"
               label="Buying Price"
@@ -393,7 +418,7 @@ function NewProductForm() {
             </Form.Item>
             <Form.Item
               name="domainCounts"
-              label="Domain count"
+              label="Domain counts"
               rules={[
                 {
                   required: true,
@@ -416,7 +441,7 @@ function NewProductForm() {
               <Select style={{ width: "25%" }}>
                 {data &&
                   data.user.branches.map((branch) => (
-                    <Select.Option value={branch.branchId}>
+                    <Select.Option value={branch.name} key={branch.name}>
                       {branch.name}
                     </Select.Option>
                   ))}
@@ -437,19 +462,7 @@ function NewProductForm() {
               >
                 Submit
               </Button>
-              <Button
-                htmlType="reset"
-                className="add_new_product__button"
-                type="default"
-                style={{
-                  marginRight: "1em",
-                  background: "rgba(255,0,0,.65)",
-                  color: "white",
-                }}
-                onClick={() => setImagePreview(false)}
-              >
-                Clear
-              </Button>
+
               <Link to="/products">
                 <Button htmlType="reset" className="add_new_product__button">
                   Close
@@ -461,6 +474,7 @@ function NewProductForm() {
       </div>
       <Modal
         open={isShowModal}
+        onOk={handleOnCloseModal}
         onCancel={handleOnCloseModal}
         className="add_new_product__popup"
         bodyStyle={{
@@ -468,11 +482,13 @@ function NewProductForm() {
         }}
         footer={null}
       >
-        <div className="add_new_product__popup__icon">
-          <img src={Successful} />
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-1/5 m-auto">
+            <img src={Successful} />
+          </div>
+          <p>Successfully Added New Product</p>
         </div>
-        <p>Successfully Added New Product</p>
-        <div className="add_new_product__popup__data">
+        <div className="add_new_product__popup__data font-sans font-medium text-slate-700">
           <div className="add_new_product__popup__data__item">
             <span>Product ID</span>
             <span className="add_new_product__popup__data__item  add_new_product__popup__data__item-id">
@@ -513,7 +529,7 @@ function NewProductForm() {
         <div className="add_new_product__popup__buttons">
           <Button
             type="primary"
-            onClick={() => setIsShowModal(false)}
+            onClick={handleOnCloseModal}
             className="add_new_product__popup__button"
           >
             Ok
@@ -542,8 +558,6 @@ function UploadImg({ setFile, imagePreview, setImagePreview }) {
       };
 
       reader.readAsDataURL(selectedFile);
-    } else {
-      alert("Please select a valid image file.");
     }
   };
 

@@ -2,72 +2,17 @@
 
 :root {
   --primary-color: rgba(21, 122, 254, 1);
-  --secondary-color: rgba(130, 112, 112, 1);
+  --secondary-color: #827070;
   --gradient-color: linear-gradient(
     270deg,
     rgba(182, 65, 181, 0.11) 0%,
-    rgba(21, 122, 254, 0.14) 100%
+    #157afe24 100%
   );
-  font-size: 13px;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: "Poppins";
-  a {
-    text-decoration: none;
-  }
-  ul {
-    list-style: none;
-  }
-  user-select: none;
+  font-size: 16px;
 }
 
 // Mixins
 @import "./mixins";
-
-img {
-  width: 100%;
-  object-fit: cover;
-}
-
-.container {
-  width: 100%;
-  height: 100vh;
-  position: relative;
-
-  max-width: 1577px;
-  min-width: 1260px;
-  min-height: 600px;
-  max-height: 1000px;
-
-  margin: 0 auto;
-  overflow: hidden;
-  display: flex;
-  justify-content: space-between;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  .dashboard {
-    width: 82%;
-    max-width: 1650px;
-    margin: 0 auto;
-    min-height: 100%;
-    overflow: scroll;
-
-    &::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-    }
-  }
-}
 
 // Components
 @import "./sidebar";
@@ -94,3 +39,99 @@ img {
 @import "./pages/signup";
 @import "./pages/not_found";
 @import "./pages/mailverify";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Poppins";
+    a {
+      text-decoration: none;
+    }
+    ul {
+      list-style: none;
+    }
+    user-select: none;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 0px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #f1f1f1;
+    border-radius: 5px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(21, 122, 254, 0.2);
+  }
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  img {
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .container {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+
+    max-width: 1920px;
+    min-width: 1260px;
+    min-height: 600px;
+    max-height: 1000px;
+
+    margin: 0 auto;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .dashboard {
+      width: 82%;
+      max-width: 1650px;
+      margin: 0 auto;
+      min-height: 100%;
+      overflow: scroll;
+
+      &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+    }
+  }
+}
