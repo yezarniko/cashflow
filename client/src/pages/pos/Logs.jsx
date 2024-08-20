@@ -14,11 +14,14 @@ import OverviewIcon from "@assets/overview.svg";
 import clsx from "clsx";
 import FilterIcon from "@assets/filter.png";
 
+import { useBranch } from "@hooks/useBranch";
+
 function SaleLogs() {
   const [saleLogs, setSaleLogs] = useState([]);
   const [initialSaleLogs, setInitialSaleLogs] = useState([]);
   const [selectedLog, setSelectedLog] = useState("");
-  const [currentBranch, setCurrentBranch] = useState("main");
+
+  const { currentBranch } = useBranch();
 
   const [sortLog, setSortLog] = useState("ByDate");
   const [isAccending, setIsAccending] = useState(false);
@@ -310,7 +313,7 @@ function PurchaseLogs() {
   const [purchaseLogs, setPurchaseLogs] = useState([]);
   const [initialPurchaseLogs, setInitialPurchaseLogs] = useState([]);
   const { purchases } = useDatabase();
-  const [currentBranch, setCurrentBranch] = useState("main");
+  const { currentBranch } = useBranch();
 
   const collapseIconStyle = {
     fontSize: "1.5rem",
@@ -320,25 +323,27 @@ function PurchaseLogs() {
 
   useEffect(() => {
     if (purchases) {
-      let data = Object.keys(purchases[currentBranch]).map((date) => {
-        const products = Object.values(
-          Object.values(purchases[currentBranch][date])
-        );
-        const payload = {
-          date: date,
-          products: products,
-          totalPrice: products
-            .map((p) => p.price * p.appendCounts)
-            .reduce((a, b) => a + b),
-        };
+      if (purchases[currentBranch]) {
+        let data = Object.keys(purchases[currentBranch]).map((date) => {
+          const products = Object.values(
+            Object.values(purchases[currentBranch][date])
+          );
+          const payload = {
+            date: date,
+            products: products,
+            totalPrice: products
+              .map((p) => p.price * p.appendCounts)
+              .reduce((a, b) => a + b),
+          };
 
-        return payload;
-      });
-      let D = (d) => d.date.split("-").slice(0, 2).reverse().join("-");
-      data.sort((a, b) => new Date(D(a)) - new Date(D(b))).reverse();
-      console.log(data);
-      setPurchaseLogs(data);
-      setInitialPurchaseLogs(data);
+          return payload;
+        });
+        let D = (d) => d.date.split("-").slice(0, 2).reverse().join("-");
+        data.sort((a, b) => new Date(D(a)) - new Date(D(b))).reverse();
+        console.log(data);
+        setPurchaseLogs(data);
+        setInitialPurchaseLogs(data);
+      }
     }
   }, [purchases]);
 
@@ -500,7 +505,7 @@ function ProductLogsDrawer({ data, openProductLogs, setOpenProductLogs }) {
 
 function Incomes() {
   const [incomes, setIncomes] = useState(null);
-  const [currentBranch, setCurrentBranch] = useState("main");
+  const { currentBranch } = useBranch();
   const [openProductLogs, setOpenProductLogs] = useState(false);
   const [drawerData, setDrawerData] = useState(null);
 

@@ -42,6 +42,8 @@ import { Ollama } from "ollama/browser";
 import { useDatabase } from "@/hooks/useDatabase";
 import { useRef } from "react";
 
+import { useBranch } from "@hooks/useBranch";
+
 const layout = {
   labelCol: {
     span: 8,
@@ -315,7 +317,7 @@ const Settings = () => {
                   width: "55%",
                 }}
               >
-                {/* <BranchesSettings currentUser={currentUser} /> */}
+                <BranchesSettings currentUser={currentUser} />
               </div>
             ),
           },
@@ -479,20 +481,20 @@ const TrainingSection = () => {
 function BranchesSettings({ currentUser }) {
   const [isCreateBranchModalOpen, setIsCreateBranchModalOpen] = useState(false);
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
-  const [currentBranch, setCurrentBranch] = useState("Main");
+  const { branches } = useDatabase();
 
-  const { data, loading, error } = useQuery(GET_BRANCHES, {
-    variables: { userId: currentUser.uid, token: currentUser.accessToken },
-  });
+  const { currentBranch } = useBranch();
+
+  // const { data, loading, error } = useQuery(GET_BRANCHES, {
+  //   variables: { userId: currentUser.uid, token: currentUser.accessToken },
+  // });
 
   useEffect(() => {
-    if (data) {
-      console.log(currentUser.accessToken);
-      console.log(currentUser.uid);
-    }
-  });
+    console.log(currentUser.accessToken);
+    console.log(currentUser.uid);
+  }, []);
 
-  if (loading) return <div>Loading</div>;
+  // if (loading) return <div>Loading</div>;
   // if (error) return <div>error.message</div>
 
   function createBranch(values) {
@@ -506,9 +508,8 @@ function BranchesSettings({ currentUser }) {
   }
 
   return (
-    !loading && (
-      <div className="branch__settings">
-        <Modal
+    <div className="branch__settings">
+      {/* <Modal
           width="25%"
           justify-content="space-between"
           open={isOTPModalOpen}
@@ -524,8 +525,8 @@ function BranchesSettings({ currentUser }) {
               Verify
             </Button>
           </div>
-        </Modal>
-        <Modal
+        </Modal> */}
+      {/* <Modal
           width="28%"
           open={isCreateBranchModalOpen}
           onCancel={closeCreateBranchModal}
@@ -601,40 +602,40 @@ function BranchesSettings({ currentUser }) {
               </Form>
             </div>
           </div>
-        </Modal>
-        <div className="branch__settings__container">
-          <div className="branch__settings__container__main">
-            <h2>Branches</h2>
+        </Modal> */}
+      <div className="branch__settings__container">
+        <div className="branch__settings__container__main">
+          <h2>Branches</h2>
 
-            <Radio.Group
-              defaultValue={currentBranch}
-              onChange={(v) => {
-                setCurrentBranch(v);
-                console.log(currentBranch);
-              }}
-            >
-              <div className="branch__settings__container__main__radio">
-                {data.user.branches.map((branch) => (
-                  <Radio value={branch.name} key={branch.branchId}>
-                    <span>{branch.name}</span>
-                  </Radio>
-                ))}
-              </div>
-            </Radio.Group>
-          </div>
-
-          <div className="branch__settings__container__image">
-            <div className="branch__settings__container__image__icon">
-              <img src={PlugIcon} />
-              <span onClick={() => setIsCreateBranchModalOpen(true)}>
-                Crate New Branch
-              </span>
+          <Radio.Group
+            defaultValue={currentBranch}
+            onChange={(v) => {
+              // setCurrentBranch(v);
+              // console.log(currentBranch);
+            }}
+          >
+            <div className="branch__settings__container__main__radio">
+              {branches.map((branch) => (
+                <Radio value={branch} key={branch}>
+                  <span>{branch}</span>
+                </Radio>
+              ))}
             </div>
-
-            <img src={BranchImage} width={"120px"} />
-          </div>
+          </Radio.Group>
         </div>
-        <div className="branch__settings__bottom">
+
+        <div className="branch__settings__container__image">
+          <div className="branch__settings__container__image__icon">
+            <img src={PlugIcon} />
+            <span onClick={() => setIsCreateBranchModalOpen(true)}>
+              Crate New Branch
+            </span>
+          </div>
+
+          <img src={BranchImage} width={"120px"} />
+        </div>
+      </div>
+      {/* <div className="branch__settings__bottom">
           <div className="branch__settings__bottom__info">
             <div className="branch__settings__bottom__field">
               <div className="branch__settings__bottom__field__name">
@@ -675,9 +676,8 @@ function BranchesSettings({ currentUser }) {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    )
+        </div> */}
+    </div>
   );
 }
 

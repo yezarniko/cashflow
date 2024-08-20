@@ -67,6 +67,7 @@ import {
 } from "chart.js";
 import { Line, Scatter } from "react-chartjs-2";
 import { date } from "yup";
+import { useBranch } from "@hooks/useBranch";
 
 ChartJS.register(
   CategoryScale,
@@ -1321,7 +1322,8 @@ export function SearchBox({ setProducts, className }) {
   const [queryProducts, setQueryProducts] = useState([]);
 
   const { productList } = useDatabase();
-  const [currentBranch, setCurrentBranch] = useState("main");
+
+  const { currentBranch } = useBranch();
 
   useEffect(() => {
     if (productList) {
@@ -1387,7 +1389,7 @@ function ProductsTable({
   setCurrentBrandFilter,
 }) {
   const { productList, loading, deleteProduct } = useDatabase();
-  const [currentBranch, setCurrentBranch] = useState("main");
+  const { currentBranch } = useBranch();
   const { storage } = useFireBaseStorage();
   const productsRef = useRef(null);
   const [productCorrelations, setProductCorrelations] = useState({
@@ -1410,37 +1412,41 @@ function ProductsTable({
   }, [productList]);
 
   useEffect(() => {
-    if (products.length != 0) {
-      let Products = [...products];
-      if (sortProduct === "ByName") {
-        Products.sort((a, b) => {
-          if (a.productName < b.productName) {
-            return -1;
-          }
-          if (a.productName > b.productName) {
-            return 1;
-          }
-          return 0;
-        });
-      } else {
-        Products.sort(
-          (a, b) =>
-            new Date(a.recentModifiedDate) - new Date(b.recentModifiedDate)
-        );
+    if (products) {
+      if (products.length != 0) {
+        let Products = [...products];
+        if (sortProduct === "ByName") {
+          Products.sort((a, b) => {
+            if (a.productName < b.productName) {
+              return -1;
+            }
+            if (a.productName > b.productName) {
+              return 1;
+            }
+            return 0;
+          });
+        } else {
+          Products.sort(
+            (a, b) =>
+              new Date(a.recentModifiedDate) - new Date(b.recentModifiedDate)
+          );
+        }
+        if (!isAccending) {
+          Products.reverse();
+        }
+        setProducts(Products);
       }
-      if (!isAccending) {
-        Products.reverse();
-      }
-      setProducts(Products);
     }
   }, [sortProduct, isAccending]);
 
   useEffect(() => {
     if (currentCategoryFilter !== "") {
-      let Products = productsRef.current.filter(
-        (product) => product.category == currentCategoryFilter
-      );
-      setProducts(Products);
+      if (productsRef.current) {
+        let Products = productsRef.current.filter(
+          (product) => product.category == currentCategoryFilter
+        );
+        setProducts(Products);
+      }
     } else {
       setProducts(productsRef.current);
       setCurrentBrandFilter("");
@@ -1449,10 +1455,12 @@ function ProductsTable({
 
   useEffect(() => {
     if (currentBrandFilter !== "") {
-      let Products = productsRef.current.filter(
-        (product) => product.brand == currentBrandFilter
-      );
-      setProducts(Products);
+      if (productsRef.current) {
+        let Products = productsRef.current.filter(
+          (product) => product.brand == currentBrandFilter
+        );
+        setProducts(Products);
+      }
     } else {
       setProducts(productsRef.current);
       setCurrentCategoryFilter("");
@@ -2127,16 +2135,18 @@ function ProductCorrelationsDrawer({
       let n = products.map((p) => ({
         name: p.productName,
         saleLogs: p.saleLogs
-          .map((log) => ({
-            counts: log.counts,
-            date: new Date(log.date).toLocaleDateString(),
-          }))
-          .reduce(
-            (acc, { counts, date }) => (
-              (acc[date] = acc[date] || 0), (acc[date] += counts), acc
-            ),
-            {}
-          ),
+          ? p.saleLogs
+              ?.map((log) => ({
+                counts: log.counts,
+                date: new Date(log.date).toLocaleDateString(),
+              }))
+              .reduce(
+                (acc, { counts, date }) => (
+                  (acc[date] = acc[date] || 0), (acc[date] += counts), acc
+                ),
+                {}
+              )
+          : [],
       }));
       let all_sale_dates = [
         ...new Set(
@@ -2153,6 +2163,9 @@ function ProductCorrelationsDrawer({
         {}
       );
       setProductsPopulation(population);
+      console.log(population);
+      console.log(all_sale_dates);
+      console.log(products);
 
       setXproducts(
         population[products[productCorrelations.productIndex]?.productName]
@@ -2197,6 +2210,9 @@ function ProductCorrelationsDrawer({
         const { slope, intercept } = linearRegression(xProducts, yProducts);
         setSlope(slope);
         setIntercept(intercept);
+        console.log();
+        console.log(xProducts);
+        console.log(yProducts);
       }
     }
   }, [xProducts, yProducts]);

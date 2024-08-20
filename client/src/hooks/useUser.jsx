@@ -23,11 +23,9 @@ const auth = getAuth(app);
 
 const UserContext = React.createContext();
 
-
 export function UserProvider({ children }) {
   const [currentUser, setCurrentUser] = useState();
   const [loading, setLoading] = useState(true);
-
 
   function signInWithGoogle({ messageApi }) {
     const provider = new GoogleAuthProvider();
@@ -223,6 +221,7 @@ export function UserProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
+      console.log("current User: ", user);
       setCurrentUser(user);
       setLoading(false);
     });

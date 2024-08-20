@@ -19,6 +19,8 @@ import CorrelationImg from "@assets/stat_cor-2.png";
 import { Button, Modal, Select, Skeleton } from "antd";
 import { useDatabase } from "@hooks/useDatabase";
 
+import { useBranch } from "@hooks/useBranch";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -316,67 +318,56 @@ const correlationChartOptions = {
   },
 };
 
-function Accountant({ icon, label, amount }) {
-  return (
-    <div className="statistics__accountant">
-      <div className="statistics__accountant__amount">
-        <div>{label}</div>
-        <div>
-          {amount} <span style={{ color: "var(--secondary-color)" }}>ks</span>
-        </div>
-      </div>
-      <div className="statistics__accountant__img">
-        <img src={icon} />
-      </div>
-    </div>
-  );
-}
-
 function BarChart() {
   const [dataSet1, setDataSet1] = useState([]);
   const [dataSet2, setDataSet2] = useState([]);
   const [labels, setLabels] = useState([]);
 
   const { productList } = useDatabase();
-  const [currentBranch, setCurrentBranch] = useState("main");
+
+  const { currentBranch } = useBranch();
 
   useEffect(() => {
     if (productList) {
-      const products = Object.values(productList[currentBranch]).map((p) => {
-        if (p.saleLogs) {
-          let Logs = p.saleLogs;
-          let v = [0];
-          if (Logs.length > 0) {
-            Logs.sort((a, b) => new Date(a.date) - new Date(b.date)).reverse();
-            let counts = {};
-            Logs.forEach((log) => {
-              let date = `${new Date(log.date).toDateString()}`;
-              if (counts[date]) {
-                counts[date] += log.counts;
-              } else {
-                counts[date] = log.counts;
-              }
-            });
-            v = Object.values(counts);
+      if (productList[currentBranch]) {
+        const products = Object.values(productList[currentBranch]).map((p) => {
+          if (p.saleLogs) {
+            let Logs = p.saleLogs;
+            let v = [0];
+            if (Logs.length > 0) {
+              Logs.sort(
+                (a, b) => new Date(a.date) - new Date(b.date)
+              ).reverse();
+              let counts = {};
+              Logs.forEach((log) => {
+                let date = `${new Date(log.date).toDateString()}`;
+                if (counts[date]) {
+                  counts[date] += log.counts;
+                } else {
+                  counts[date] = log.counts;
+                }
+              });
+              v = Object.values(counts);
+            }
+            return [p.productName, v[0], Math.max(...v)];
+          } else {
+            return [p.productName, 0, 0];
           }
-          return [p.productName, v[0], Math.max(...v)];
-        } else {
-          return [p.productName, 0, 0];
-        }
-      });
-      let a1 = [];
-      let a2 = [];
-      let labels = [];
+        });
+        let a1 = [];
+        let a2 = [];
+        let labels = [];
 
-      products.forEach((p) => {
-        labels.push(p[0]);
-        a1.push(p[1]);
-        a2.push(p[2]);
-      });
+        products.forEach((p) => {
+          labels.push(p[0]);
+          a1.push(p[1]);
+          a2.push(p[2]);
+        });
 
-      setDataSet1([...a1]);
-      setDataSet2([...a2]);
-      setLabels([...labels]);
+        setDataSet1([...a1]);
+        setDataSet2([...a2]);
+        setLabels([...labels]);
+      }
     }
   }, [productList]);
 
@@ -523,212 +514,69 @@ function CorrelationItemSelectModal({
   );
 }
 
-function CorrelationChart({ duration }) {
-  const [
-    isChooseOpenCorrelationItemModal,
-    setIsChooseOpenCorrelationItemModal,
-  ] = useState(false);
-  const [isOpenCorrelatedImgModal, setIsOpenCorrelatedImgModal] =
-    useState(false);
-
-  const [firstItem, setFirstItem] = useState("item1");
-  const [secondItem, setSecondItem] = useState("item2");
-
-  const [isLoading, setIsLoading] = useState(true);
-
-  return (
-    <>
-      <Modal
-        open={isOpenCorrelatedImgModal}
-        footer={null}
-        onCancel={() => setIsOpenCorrelatedImgModal(false)}
-      >
-        <div
-          style={{
-            width: "478px",
-            aspectRatio: "2/1",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {isLoading ? (
-            <Skeleton.Avatar
-              active={true}
-              shape="square"
-              size={400}
-            ></Skeleton.Avatar>
-          ) : (
-            <img src={CorrelationImg} style={{ width: "100%" }} />
-          )}
-        </div>
-      </Modal>
-      <CorrelationItemSelectModal
-        isModalOpen={isChooseOpenCorrelationItemModal}
-        setIsModalOpen={setIsChooseOpenCorrelationItemModal}
-        {...{ setFirstItem, setSecondItem }}
-      />
-      <div className="statistics__line_charts__correlation">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            marginBottom: "2em",
-          }}
-        >
-          <Button
-            type="primary"
-            size="small"
-            shape="round"
-            onClick={() => {
-              setIsOpenCorrelatedImgModal(true);
-              setIsLoading(true);
-              const interval = setInterval(() => {
-                setIsLoading(false);
-              }, 2000);
-            }}
-          >
-            Correlate
-          </Button>
-          <div
-            className="statistics__line_charts__correlation__selector"
-            onClick={() => setIsChooseOpenCorrelationItemModal(true)}
-          >
-            <div>
-              <div
-                className="statistics__line_charts__correlation__selector__line"
-                style={{
-                  background: "rgba(246, 108, 7, 0.25)",
-                }}
-              ></div>
-              <div className="statistics__line_charts__correlation__selector__text">
-                {firstItem}
-              </div>
-            </div>
-            <div>
-              <div
-                className="statistics__line_charts__correlation__selector__line"
-                style={{
-                  background: "rgba(21, 245, 192, 0.5)",
-                }}
-              ></div>
-              <div className="statistics__line_charts__correlation__selector__text">
-                {secondItem}
-              </div>
-            </div>
-          </div>
-        </div>
-        <Line
-          options={correlationChartOptions}
-          data={{
-            labels: labels[duration],
-            datasets: [
-              {
-                id: 1,
-                label: "",
-                data: [100, 300, 200, 400, 300, 320, 300],
-                borderColor: "rgba(246, 108, 7, .25)",
-                backgroundColor: "rgba(190, 209, 246, 0.5)",
-              },
-              {
-                id: 2,
-                label: "",
-                data: [200, 400, 100, 400, 300, 400, 200],
-                borderColor: "rgba(21, 245, 192, .25)",
-                backgroundColor: "rgba(21, 245, 192, 0.5)",
-              },
-            ],
-          }}
-        />
-      </div>
-    </>
-  );
-}
-
 function PieChart() {
   const { productList } = useDatabase();
-  const [currentBranch, setCurrentBranch] = useState("main");
+  const { currentBranch } = useBranch();
   const [dataSet, setDataSet] = useState({});
   const [labels, setLabels] = useState([]);
 
   useEffect(() => {
     if (productList) {
-      const products = Object.values(productList[currentBranch]).map((p) => {
-        if (p.saleLogs) {
-          let Logs = p.saleLogs;
-          let v = [0];
-          if (Logs.length > 0) {
-            let counts = {};
-            Logs.forEach((log) => {
-              let date = `${new Date(log.date).toDateString()}`;
-              if (counts[date]) {
-                counts[date] += log.counts;
-              } else {
-                counts[date] = log.counts;
-              }
-            });
-            v = Object.values(counts);
+      if (productList[currentBranch]) {
+        const products = Object.values(productList[currentBranch]).map((p) => {
+          if (p.saleLogs) {
+            let Logs = p.saleLogs;
+            let v = [0];
+            if (Logs.length > 0) {
+              let counts = {};
+              Logs.forEach((log) => {
+                let date = `${new Date(log.date).toDateString()}`;
+                if (counts[date]) {
+                  counts[date] += log.counts;
+                } else {
+                  counts[date] = log.counts;
+                }
+              });
+              v = Object.values(counts);
+            }
+            return [p.category, Math.max(...v)];
+          } else {
+            return [p.category, 0];
           }
-          return [p.category, Math.max(...v)];
+        });
+        let categories = {};
+
+        products.forEach((p) => {
+          if (categories[p[0]]) {
+            categories[p[0]] += p[1];
+          } else {
+            categories[p[0]] = p[1];
+          }
+        });
+
+        if (Object.keys(categories).length > 6) {
+          const sortedCategories = Object.entries(categories).sort(
+            (a, b) => b[1] - a[1]
+          );
+
+          // console.log(sortedCategories);
+
+          let showValues = sortedCategories.slice(0, 6);
+          let others = sortedCategories.slice(6);
+          console.log(others);
+
+          setLabels(showValues.map((s) => s[0]).concat("Others in average"));
+
+          let means_of_others = parseInt(
+            others.map((o) => o[1]).reduce((a, b) => a + b, 0) / others.length
+          );
+
+          setDataSet(showValues.map((s) => s[1]).concat(means_of_others));
         } else {
-          return [p.category, 0];
+          setLabels(Object.keys(categories));
+
+          setDataSet(Object.values(categories));
         }
-      });
-      let categories = {};
-
-      products.forEach((p) => {
-        if (categories[p[0]]) {
-          categories[p[0]] += p[1];
-        } else {
-          categories[p[0]] = p[1];
-        }
-      });
-
-      // categories = {
-      //   // Electronics: 45,
-      //   // Clothing: 50,
-      //   // "Home & Kitchen": 23,
-      //   // "Sports & Outdoors": 40,
-      //   // "Beauty & Personal Care": 22,
-      //   // Automotive: 21,
-      //   // "Toys & Games": 11,
-      //   // Books: 20,
-      //   // "Health & Wellness": 30,
-      //   // Jewelry: 38,
-      //   // Grocery: 2,
-      //   // Furniture: 14,
-      //   // Shoes: 16,
-      //   // "Tools & Home Improvement": 18,
-      //   // "Garden & Outdoor": 12,
-      //   // "Pet Supplies": 10,
-      //   // "Office Products": 2,
-      // };
-
-      if (Object.keys(categories).length > 6) {
-        const sortedCategories = Object.entries(categories).sort(
-          (a, b) => b[1] - a[1]
-        );
-
-        // console.log(sortedCategories);
-
-        let showValues = sortedCategories.slice(0, 6);
-        let others = sortedCategories.slice(6);
-        console.log(others);
-
-        setLabels(showValues.map((s) => s[0]).concat("Others in average"));
-
-        let means_of_others = parseInt(
-          others.map((o) => o[1]).reduce((a, b) => a + b, 0) / others.length
-        );
-
-        setDataSet(showValues.map((s) => s[1]).concat(means_of_others));
-      } else {
-        setLabels(Object.keys(categories));
-
-        setDataSet(Object.values(categories));
       }
     }
   }, [productList]);
@@ -782,7 +630,7 @@ function PieChart() {
 function SaleChart() {
   const [duration, setDuration] = useState("Month");
   const duraionMenu = ["Week", "Month", "Year"];
-  const [currentBranch, setCurrentBranch] = useState("main");
+  const { currentBranch } = useBranch();
   const [values, setValues] = useState([]);
   const [TheDataSet, setTheDataSet] = useState([]);
 
@@ -790,54 +638,60 @@ function SaleChart() {
 
   useEffect(() => {
     if (sales) {
-      const data = Object.values(sales[currentBranch]).map((d) =>
-        Object.values(d)
-          .map((a) => a.totalPrice)
-          .reduce((a, b) => a + b, 0)
-      );
-      const dates = Object.values(sales[currentBranch]).map(
-        (d) =>
-          [
-            ...new Set(
-              Object.values(d).map((a) => new Date(a.date).toDateString())
-            ),
-          ][0]
-      );
-      const dataSet = {};
-      dates.forEach((key, index) => {
-        dataSet[key] = data[index];
-      });
+      if (sales[currentBranch]) {
+        const data = Object.values(sales[currentBranch]).map((d) =>
+          Object.values(d)
+            .map((a) => a.totalPrice)
+            .reduce((a, b) => a + b, 0)
+        );
+        const dates = Object.values(sales[currentBranch]).map(
+          (d) =>
+            [
+              ...new Set(
+                Object.values(d).map((a) => new Date(a.date).toDateString())
+              ),
+            ][0]
+        );
+        const dataSet = {};
+        dates.forEach((key, index) => {
+          dataSet[key] = data[index];
+        });
 
-      const dataset = {};
-      const now = new Date();
+        const dataset = {};
+        const now = new Date();
 
-      // Get current month and year
-      const year = now.getFullYear();
-      const month = now.getMonth();
+        // Get current month and year
+        const year = now.getFullYear();
+        const month = now.getMonth();
 
-      // Loop through all days in the month
-      for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) {
-        const date = new Date(year, month, day);
+        // Loop through all days in the month
+        for (
+          let day = 1;
+          day <= new Date(year, month + 1, 0).getDate();
+          day++
+        ) {
+          const date = new Date(year, month, day);
 
-        // Format the date to "Day Mon DD YYYY"
-        const formattedDate = date.toDateString();
+          // Format the date to "Day Mon DD YYYY"
+          const formattedDate = date.toDateString();
 
-        let value;
+          let value;
 
-        if (dataSet[formattedDate]) {
-          value = dataSet[formattedDate];
-        } else {
-          value = 0;
+          if (dataSet[formattedDate]) {
+            value = dataSet[formattedDate];
+          } else {
+            value = 0;
+          }
+
+          // Add the formatted date and value to the dataset
+          dataset[formattedDate] = value;
         }
 
-        // Add the formatted date and value to the dataset
-        dataset[formattedDate] = value;
+        let values = Object.keys(dataset)
+          .sort((a, b) => new Date(a) - new Date(b))
+          .map((date) => dataset[date]);
+        setValues(values);
       }
-
-      let values = Object.keys(dataset)
-        .sort((a, b) => new Date(a) - new Date(b))
-        .map((date) => dataset[date]);
-      setValues(values);
     }
   }, [sales]);
 

@@ -13,7 +13,6 @@ import {
 
 import { useUser } from "@hooks/useUser";
 import useFireBase from "@hooks/useFirebase";
-import { Ollama } from "ollama/browser";
 
 const FirebaseDatabaseContext = React.createContext(null);
 
@@ -30,6 +29,7 @@ export function FirebaseDatabaseProvider({ children }) {
   const [sales, setSales] = useState(null);
   const [purchases, setPurchases] = useState(null);
   const [orders, setOrders] = useState({ main: [] });
+  const [branches, setBranches] = useState([]);
 
   useEffect(() => {
     if (currentUser) {
@@ -37,6 +37,16 @@ export function FirebaseDatabaseProvider({ children }) {
       onValue(currentUserRef, (snapshot) => {
         const data = snapshot.val();
         setProductListId(data["productListId"]);
+      });
+
+      const branchesRef = ref(db, "branches/" + currentUser.uid);
+      onValue(branchesRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setBranches(data);
+        } else {
+          set(ref(db, "branches/" + currentUser.uid), ["main"]);
+        }
       });
 
       const categoriesRef = ref(db, "categories/" + currentUser.uid);
@@ -394,6 +404,7 @@ export function FirebaseDatabaseProvider({ children }) {
       value={{
         productList,
         sales,
+        branches,
         purchases,
         loading,
         categories,

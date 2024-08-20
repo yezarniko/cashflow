@@ -57,98 +57,19 @@ function NewProductForm() {
 
   const { currentUser } = useUser();
   const { storage } = useFireBaseStorage();
-  const { loading, createNewProduct } = useDatabase();
+  const { loading, createNewProduct, branches } = useDatabase();
 
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [messageApi, contextHolder] = message.useMessage();
 
-  const Get_DATA = gql`
-    query getData($userId: String!, $token: String!) {
-      user(userId: $userId, token: $token) {
-        branches {
-          name
-          branchId
-        }
-      }
-      categories {
-        name
-      }
-      brands {
-        name
-      }
-    }
-  `;
-
-  const ADD_PRODUCT = gql`
-    mutation AddProduct(
-      $userId: String!
-      $accountToken: String!
-      $branchId: String!
-      $branchToken: String!
-      $productId: String!
-      $category: String!
-      $brand: String!
-      $productName: String!
-      $productImg: String
-      $buyingPrice: Int!
-      $salePrice: Int!
-      $domainCounts: Int!
-    ) {
-      addProduct(
-        userId: $userId
-        accountToken: $accountToken
-        branchId: $branchId
-        branchToken: $branchToken
-        productId: $productId
-        category: $category
-        brand: $brand
-        productName: $productName
-        productImg: $productImg
-        buyingPrice: $buyingPrice
-        salePrice: $salePrice
-        domainCounts: $domainCounts
-      ) {
-        productId
-        productName
-        salePrice
-      }
-    }
-  `;
-
   const { categories, brands } = useDatabase();
 
-  const [data, setData] = useState({
-    user: {
-      branches: [
-        {
-          branchId: 1,
-          name: "main",
-        },
-      ],
-    },
-  });
+  // const [branches, setBranches] = useState(["main"]);
+  const [currentBranch, setCurrentBranch] = useState("main");
 
   const [isCategoriesModalOpen, setIsCategoreisModalOpen] = useState(false);
   const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
-
-  // const { data, loading, error } = useQuery(Get_DATA, {
-  //   variables: {
-  //     userId: currentUser.uid,
-  //     token: currentUser.accessToken,
-  //   },
-  // });
-
-  // const [AddProduct, { data: sdata, loading: sloading, error: serror }] =
-  //   useMutation(ADD_PRODUCT);
-
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
-
-  // if (sloading) {
-  //   return <div>Loading...</div>;
-  // }
 
   function handleOnCloseModal() {
     form.resetFields();
@@ -175,7 +96,7 @@ function NewProductForm() {
         ],
       };
       console.log(Data);
-      createNewProduct(Data, "main");
+      createNewProduct(Data, Data.branch);
       try {
         setIsShowModal(true);
       } catch (error) {
@@ -318,24 +239,6 @@ function NewProductForm() {
             </div>
 
             <Form.Item label="Product Image" valuePropName="fileList">
-              {/* <Upload
-                name="avatar"
-                onChange={() => {}}
-                action="/upload.do"
-                listType="picture-card"
-                multiple={false}
-              >
-                <div>
-                  <PlusOutlined />
-                  <div
-                    style={{
-                      marginTop: 8,
-                    }}
-                  >
-                    Upload
-                  </div>
-                </div>
-              </Upload> */}
               <UploadImg
                 setFile={setFile}
                 imagePreview={imagePreview}
@@ -439,10 +342,10 @@ function NewProductForm() {
               ]}
             >
               <Select style={{ width: "25%" }}>
-                {data &&
-                  data.user.branches.map((branch) => (
-                    <Select.Option value={branch.name} key={branch.name}>
-                      {branch.name}
+                {branches &&
+                  branches.map((branch) => (
+                    <Select.Option value={branch} key={branch}>
+                      {branch}
                     </Select.Option>
                   ))}
               </Select>

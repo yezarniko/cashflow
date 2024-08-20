@@ -23,6 +23,7 @@ import RemovedProductImg from "@assets/delete-product.png";
 import { useUser } from "@/hooks/useUser";
 import { gql, useQuery } from "@apollo/client";
 import { useDatabase } from "@hooks/useDatabase";
+import { useBranch } from "@hooks/useBranch";
 
 /**
  * The `Home` function is a React component that represents the home page.
@@ -69,7 +70,7 @@ function Home() {
 
   const [loading, setLoading] = useState(true);
   const { sales } = useDatabase();
-  const [currentBranch, setCurrentBranch] = useState("main");
+  const { currentBranch } = useBranch();
   const [recentSaleLogs, setRecentSaleLogs] = useState([]);
 
   useEffect(() => {
@@ -470,6 +471,7 @@ function Upsale({ data }) {
  */
 function OrderList() {
   const { orders } = useDatabase();
+  const { currentBranch } = useBranch();
 
   return (
     <>
@@ -477,9 +479,13 @@ function OrderList() {
         <h3 className="home__order_list__heading">Order List</h3>
         <div className="home__order_list__contents">
           {orders &&
-            orders.main.length > 0 &&
-            orders.main.map((order, index) => (
-              <OrderListContent key={index} {...{ order, index }} />
+            orders[currentBranch] &&
+            orders[currentBranch].length > 0 &&
+            orders[currentBranch].map((order, index) => (
+              <OrderListContent
+                key={index}
+                {...{ order, index, currentBranch }}
+              />
             ))}
         </div>
         <AddOrderButton />
@@ -538,6 +544,7 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
   const [form] = Form.useForm();
 
   const { createOrder, orders } = useDatabase();
+  const { currentBranch } = useBranch();
 
   // message API object, which is used to notify message.
   const [messageApi, contextHolder] = message.useMessage();
@@ -606,7 +613,16 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
    */
   function handleOnSubmit(values) {
     console.log(values);
-    createOrder([...orders["main"], values], "main");
+    if (orders[currentBranch]) {
+      createOrder(
+        [...orders[currentBranch], values].filter((x) => {
+          if (x) return x;
+        }),
+        currentBranch
+      );
+    } else {
+      createOrder([values], currentBranch);
+    }
     form.resetFields(); // reset form
     setIsModalOpen(false); // close model
     playNotificationSound(); // play notification sound
@@ -729,7 +745,7 @@ function OrderListInput({ isModalOpen, setIsModalOpen }) {
  * @kind function
  * @returns {React.JSX.Element}
  */
-function OrderListContent({ order, index }) {
+function OrderListContent({ order, index, currentBranch }) {
   const [isChecked, setIsChecked] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -787,14 +803,14 @@ function OrderListContent({ order, index }) {
           type="checkbox"
           checked={order.isArrived}
           onChange={() => {
-            orders["main"][index].isArrived = !order.isArrived;
+            orders[currentBranch][index].isArrived = !order.isArrived;
             console.log(orders);
-            createOrder(orders["main"], "main");
+            createOrder(orders[currentBranch], currentBranch);
           }}
         />
         <div
           onClick={() => {
-            completeOrder(index, "main");
+            completeOrder(index, currentBranch);
           }}
         >
           done

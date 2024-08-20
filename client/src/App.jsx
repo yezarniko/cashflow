@@ -37,6 +37,7 @@ import AccountVerification from "@pages/auth/AccountVerification";
 import ForgotPassword from "@pages/auth/ForgotPassword";
 import { CashListContextProvider } from "@hooks/useCashList";
 import { FirebaseDatabaseProvider } from "@hooks/useDatabase";
+import { BranchProvider } from "@hooks/useBranch";
 
 import {
   ApolloProvider,
@@ -126,13 +127,15 @@ function App() {
     <ApolloProvider client={client}>
       <UserProvider>
         <FirebaseDatabaseProvider>
-          <FirebaseStorageProvider>
-            <CashListContextProvider>
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
-            </CashListContextProvider>
-          </FirebaseStorageProvider>
+          <BranchProvider>
+            <FirebaseStorageProvider>
+              <CashListContextProvider>
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </CashListContextProvider>
+            </FirebaseStorageProvider>
+          </BranchProvider>
         </FirebaseDatabaseProvider>
       </UserProvider>
     </ApolloProvider>

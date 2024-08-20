@@ -40,6 +40,8 @@ import { SearchBox } from "./Products";
 
 import { ReactBarcode } from "react-jsbarcode";
 
+import { useBranch } from "@hooks/useBranch";
+
 const PRODUCTS = [
   {
     name: "Coca Cola",
@@ -155,7 +157,7 @@ function Sale() {
 
   const [products, setProducts] = useState([]);
   const { productList, loading, deleteProduct } = useDatabase();
-  const [currentBranch, setCurrentBranch] = useState("main");
+  const { currentBranch } = useBranch();
   const productsRef = useRef(null);
 
   useEffect(() => {
@@ -570,6 +572,8 @@ function Payment({ currentUser }) {
 
   const { saleProduct } = useDatabase();
 
+  const { currentBranch } = useBranch();
+
   function printMe(element) {
     var printContent = element.innerHTML;
     var originalContentHead = window.document.head.innerHTML;
@@ -621,7 +625,7 @@ function Payment({ currentUser }) {
                           ? cash.name.slice(0, 15) + "..."
                           : cash.name}
                       </span>
-                      <span>{cash.price} ks</span>
+                      <span>{cash.price * cash.count} ks</span>
                     </p>
                   ))}
                   {/* {cashList.map((cash) => (
@@ -660,7 +664,7 @@ function Payment({ currentUser }) {
                         ? cash.name.slice(0, 15) + "..."
                         : cash.name}
                     </span>
-                    <span>{cash.price} ks</span>
+                    <span>{cash.price * cash.count} ks</span>
                   </p>
                 ))}
               </div>
@@ -696,7 +700,7 @@ function Payment({ currentUser }) {
             profits: profits,
             products: cashList,
           };
-          saleProduct(Data, "main");
+          saleProduct(Data, currentBranch);
           setCashList([]);
           const audio = new Audio(NotificationSound);
           audio.play();
