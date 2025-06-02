@@ -2118,8 +2118,6 @@ function ProductCorrelationsDrawer({
     }
   }
 
-  // const { slope, intercept } = linearRegression(x, y);
-
   const [slope, setSlope] = useState(0);
   const [intercept, setIntercept] = useState(0);
 
@@ -2210,7 +2208,6 @@ function ProductCorrelationsDrawer({
         const { slope, intercept } = linearRegression(xProducts, yProducts);
         setSlope(slope);
         setIntercept(intercept);
-        console.log();
         console.log(xProducts);
         console.log(yProducts);
       }
